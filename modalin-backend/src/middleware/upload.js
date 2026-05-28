@@ -29,8 +29,13 @@ const fileFilter = (req, file, cb) => {
     "text/csv",
     "application/vnd.ms-excel",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "image/webp",
   ];
-  const allowedExts = /pdf|csv|xls|xlsx/i;
+  const allowedExts = /pdf|csv|xls|xlsx|jpg|jpeg|png|gif|webp/i;
 
   const extOk = allowedExts.test(path.extname(file.originalname));
   const mimeOk = allowedTypes.includes(file.mimetype);

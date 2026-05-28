@@ -739,7 +739,7 @@ function LoginPage({ onRegister, onForgotPassword, onSuccess }: { onRegister: ()
 }
 
 // ── Sidebar nav ──────────────────────────────────────────────────────────────
-function DashboardSidebar({ activePage, onNavigate }: { activePage?: string; onNavigate?: (page: Page) => void }) {
+function DashboardSidebar({ activePage, onNavigate, onLogout }: { activePage?: string; onNavigate?: (page: Page) => void; onLogout?: () => void }) {
   const navItems = [
     { icon: imgNavHome, label: "Dashboard", page: "dashboard" as Page },
     { icon: imgNavScoring, label: "Hasil Scoring", page: "hasil-scoring" as Page },
@@ -753,32 +753,47 @@ function DashboardSidebar({ activePage, onNavigate }: { activePage?: string; onN
     "rekomendasi": "rekomendasi",
   };
   return (
-    <aside className="w-[311px] min-h-screen bg-[#2f6ab7] flex flex-col shrink-0 gap-1">
-      <div className="px-6 pt-[30px] pb-4">
-        <div className="bg-white rounded-[12px] px-3 py-2 flex items-center justify-center">
-          <img src={imgLogo} alt="ModalIn" className="h-[47px] w-full object-contain" />
-        </div>
-      </div>
-      <p className="text-white text-[14px] font-semibold tracking-[0.7px] uppercase font-['Plus_Jakarta_Sans',sans-serif] pl-[66px] pb-6">
-        UMKM CREDIT SCORING
-      </p>
-      {navItems.map(({ icon, label, page }) => {
-        const isActive = activePage === activePages[page];
-        return (
-          <div
-            key={label}
-            onClick={() => onNavigate?.(page)}
-            className={`flex items-center gap-5 py-[18px] mx-3 px-4 rounded-[8px] cursor-pointer transition-all ${
-              isActive
-                ? "bg-gradient-to-r from-[#00D4AA] to-[#00B08E]"
-                : "hover:bg-white/10"
-            }`}
-          >
-            <img src={icon} alt="" className="size-[30px] object-contain shrink-0" />
-            <span className="text-white font-semibold text-[20px] tracking-[0.7px] font-['Plus_Jakarta_Sans',sans-serif]">{label}</span>
+    <aside className="w-[311px] bg-[#2f6ab7] flex flex-col shrink-0 sticky top-0 h-screen">
+      <div className="flex-1 flex flex-col gap-1 overflow-y-auto">
+        <div className="px-6 pt-[30px] pb-4">
+          <div className="bg-white rounded-[12px] px-3 py-2 flex items-center justify-center">
+            <img src={imgLogo} alt="ModalIn" className="h-[47px] w-full object-contain" />
           </div>
-        );
-      })}
+        </div>
+        <p className="text-white text-[14px] font-semibold tracking-[0.7px] uppercase font-['Plus_Jakarta_Sans',sans-serif] pl-[66px] pb-6">
+          UMKM CREDIT SCORING
+        </p>
+        {navItems.map(({ icon, label, page }) => {
+          const isActive = activePage === activePages[page];
+          return (
+            <div
+              key={label}
+              onClick={() => onNavigate?.(page)}
+              className={`flex items-center gap-5 py-[18px] mx-3 px-4 rounded-[8px] cursor-pointer transition-all ${
+                isActive
+                  ? "bg-gradient-to-r from-[#00D4AA] to-[#00B08E]"
+                  : "hover:bg-white/10"
+              }`}
+            >
+              <img src={icon} alt="" className="size-[30px] object-contain shrink-0" />
+              <span className="text-white font-semibold text-[20px] tracking-[0.7px] font-['Plus_Jakarta_Sans',sans-serif]">{label}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="px-3 pb-6 pt-3 border-t border-white/20">
+        <button
+          onClick={onLogout}
+          className="flex items-center gap-4 w-full py-[14px] mx-0 px-4 rounded-[8px] hover:bg-white/10 transition-all cursor-pointer"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="shrink-0">
+            <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M16 17L21 12L16 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M21 12H9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <span className="text-white font-semibold text-[20px] tracking-[0.7px] font-['Plus_Jakarta_Sans',sans-serif]">Keluar</span>
+        </button>
+      </div>
     </aside>
   );
 }
@@ -860,7 +875,7 @@ function EditPersonalInfoModal({
                   className="flex-1 h-[58px] bg-[#eff4ff] border border-l-0 border-[#a3a3a3] rounded-r-[12px] px-4 font-['Plus_Jakarta_Sans',sans-serif] font-normal text-[16px] text-[#001038] placeholder:text-[#6b7280] outline-none focus:border-[#006b55] transition-colors"
                   placeholder="812-3456-7890"
                   value={form.telepon}
-                  onChange={(e) => setForm({ ...form, telepon: e.target.value })}
+                  onChange={(e) => setForm({ ...form, telepon: e.target.value.replace(/\D/g, "") })}
                 />
               </div>
             </div>
@@ -1257,32 +1272,48 @@ function ChangePasswordModal({ onClose }: { onClose: () => void }) {
 }
 
 // ── Dashboard page ────────────────────────────────────────────────────────────
-function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loanData }: {
+function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loanData, onLogout }: {
   profile: UserProfile;
   onCairanDana: () => void;
   onBayarTagihan: () => void;
   onNavigate: (page: Page) => void;
   loanData: { amount: number; duration: number } | null;
+  onLogout: () => void;
 }) {
   const font = "font-['Plus_Jakarta_Sans',sans-serif]";
+
+  // ── Fetch skor kredit real dari AI API ────────────────────────────────────
+  const [skorReal, setSkorReal] = useState<number>(0);
+  const [statusReal, setStatusReal] = useState<string>("Layak Kredit");
+  const [loadingDash, setLoadingDash] = useState(true);
+
+  useEffect(() => {
+    import("./services/api").then(({ apiGetScoring }) => {
+      apiGetScoring()
+        .then((data) => {
+          setSkorReal(data.skor_kredit ?? 0);
+          setStatusReal(data.status === "Layak" ? "Layak Kredit" : "Tidak Layak Kredit");
+        })
+        .catch(() => {})
+        .finally(() => setLoadingDash(false));
+    });
+  }, []);
+
   const arrowSvg = (
     <svg width="13" height="15" viewBox="0 0 13 14.7279" fill="none">
       <path d={svgDashPaths.p1e3fa6c0} fill="#006B55" />
     </svg>
   );
   const [showAllScoring, setShowAllScoring] = useState(false);
-  const allScoringRows = [
-    { tanggal: "24 Mei 2024", skor: 785, status: "Layak", color: "text-[#007059]" },
-    { tanggal: "12 April 2024", skor: 690, status: "Review", color: "text-[#44464f]" },
-    { tanggal: "15 Maret 2024", skor: 712, status: "Layak", color: "text-[#007059]" },
-    { tanggal: "02 Feb 2024", skor: 450, status: "Tidak Layak", color: "text-[#93000a]" },
-    { tanggal: "10 Jan 2024", skor: 620, status: "Review", color: "text-[#44464f]" },
-    { tanggal: "05 Des 2023", skor: 740, status: "Layak", color: "text-[#007059]" },
+  const today = new Date();
+  const formatTanggal = (d: Date) => d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+  const allScoringRows = loadingDash ? [] : [
+    { tanggal: formatTanggal(today), skor: skorReal, status: skorReal >= 500 ? "Layak" : "Tidak Layak", color: skorReal >= 500 ? "text-[#007059]" : "text-[#93000a]" },
   ];
   const scoringRows = showAllScoring ? allScoringRows : allScoringRows.slice(0, 1);
   return (
     <div className="flex min-h-screen bg-[#f8f9ff]">
-      <DashboardSidebar activePage="dashboard" onNavigate={onNavigate} />
+      <DashboardSidebar activePage="dashboard" onNavigate={onNavigate} onLogout={onLogout} />
       <main className="flex-1 px-10 py-8 overflow-y-auto">
         <DashboardHeader profile={profile} onNavigate={onNavigate} />
 
@@ -1292,22 +1323,30 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
           <motion.div variants={fadeUp} className="bg-white rounded-[7px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] px-5 pt-4 pb-5">
             <p className={`${font} font-semibold text-[14px] text-[#44464f] tracking-[0.7px] mb-2`}>Skor Kredit</p>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className={`${font} font-extrabold text-[36px] text-[#001038] leading-none`}><CountUp to={785} /></span>
-              <span className={`${font} font-bold text-[10px] text-[#007059] bg-[#51f9cd] rounded-full px-2 py-1`}>Layak Kredit</span>
+              <span className={`${font} font-extrabold text-[36px] text-[#001038] leading-none`}>
+                {loadingDash ? "..." : <CountUp to={skorReal} />}
+              </span>
+              <span className={`${font} font-bold text-[10px] rounded-full px-2 py-1 ${skorReal >= 500 ? "text-[#007059] bg-[#51f9cd]" : "text-white bg-[#ba1a1a]"}`}>
+                {loadingDash ? "..." : statusReal}
+              </span>
             </div>
           </motion.div>
           {/* Total Data Transaksi */}
           <motion.div variants={fadeUp} className="bg-white rounded-[7px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] px-5 pt-4 pb-5">
             <p className={`${font} font-semibold text-[14px] text-[#44464f] tracking-[0.7px] mb-2`}>Total Data Transaksi</p>
             <div className="flex items-end gap-2">
-              <span className={`${font} font-extrabold text-[36px] text-[#001038] leading-none`}><CountUp to={1235} /></span>
-              <span className={`${font} text-[12px] text-[#44464f] mb-1`}>+12% bln</span>
+              <span className={`${font} font-extrabold text-[36px] text-[#001038] leading-none`}>
+                <CountUp to={parseInt(profile.frekuensiTransaksi) || 0} />
+              </span>
+              <span className={`${font} text-[12px] text-[#44464f] mb-1`}>transaksi/bulan</span>
             </div>
           </motion.div>
           {/* Limit Tersedia */}
           <motion.div variants={fadeUp} className="bg-white rounded-[7px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] px-5 pt-4 pb-5">
             <p className={`${font} font-semibold text-[14px] text-[#44464f] tracking-[0.7px] mb-2`}>Limit Tersedia</p>
-            <p className={`${font} font-semibold text-[20px] text-[#001038] leading-none mb-2`}>Rp 15.000.000</p>
+            <p className={`${font} font-semibold text-[20px] text-[#001038] leading-none mb-2`}>
+            {loadingDash ? "..." : `Rp ${(skorReal >= 700 ? 50_000_000 : skorReal >= 500 ? 25_000_000 : 10_000_000).toLocaleString("id-ID")}`}
+          </p>
             <button onClick={onCairanDana} className={`${font} font-semibold text-[12px] text-[#006b55] flex items-center gap-1`}>
               Cairkan Dana {arrowSvg}
             </button>
@@ -1315,8 +1354,7 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
           {/* Bayar Tagihan */}
           <motion.div
             variants={fadeUp}
-            onClick={loanData ? onBayarTagihan : undefined}
-            className={`bg-white rounded-[7px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] px-5 pt-4 pb-5 ${loanData ? "cursor-pointer hover:shadow-md transition-shadow" : ""}`}
+            className="bg-white rounded-[7px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] px-5 pt-4 pb-5"
           >
             <p className={`${font} font-semibold text-[14px] text-[#44464f] tracking-[0.7px] mb-2`}>Bayar Tagihan</p>
             {loanData ? (
@@ -1324,9 +1362,12 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
                 <p className={`${font} font-semibold text-[20px] text-[#001038] leading-none mb-1`}>
                   Rp {loanData.amount.toLocaleString("id-ID")}
                 </p>
-                <p className={`${font} font-medium text-[12px] text-[#44464f] tracking-[0.7px]`}>
+                <p className={`${font} font-medium text-[12px] text-[#44464f] tracking-[0.7px] mb-2`}>
                   Kurang {loanData.duration} Bulan
                 </p>
+                <button onClick={onBayarTagihan} className={`${font} font-semibold text-[12px] text-[#006b55] flex items-center gap-1`}>
+                  Bayar Sekarang {arrowSvg}
+                </button>
               </>
             ) : (
               <p className={`${font} font-medium text-[12px] text-[#44464f] tracking-[0.7px]`}>Tidak ada tagihan</p>
@@ -1403,10 +1444,22 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
 }
 
 // ── Cairkan Dana page ─────────────────────────────────────────────────────────
-function CairanDanaPage({ onBack, onNavigate, onConfirmLoan }: { onBack: () => void; onNavigate: (page: Page) => void; onConfirmLoan: (amount: number, duration: number) => void }) {
+function CairanDanaPage({ onBack, onNavigate, onConfirmLoan, profile, onLogout }: { onBack: () => void; onNavigate: (page: Page) => void; onConfirmLoan: (amount: number, duration: number) => void; profile: UserProfile; onLogout: () => void }) {
   const [jumlahRaw, setJumlahRaw] = useState("");
   const [lamaBulan, setLamaBulan] = useState(3);
   const font = "font-['Plus_Jakarta_Sans',sans-serif]";
+
+  const [limitTersedia, setLimitTersedia] = useState<number>(25_000_000);
+  useEffect(() => {
+    import("./services/api").then(({ apiGetScoring }) => {
+      apiGetScoring()
+        .then((data) => {
+          const skor = data.skor_kredit ?? 0;
+          setLimitTersedia(skor >= 700 ? 50_000_000 : skor >= 500 ? 25_000_000 : 10_000_000);
+        })
+        .catch(() => {});
+    });
+  }, []);
 
   const jumlah = parseInt(jumlahRaw.replace(/\D/g, "")) || 0;
   const admin = jumlah * 0.01;
@@ -1430,7 +1483,7 @@ function CairanDanaPage({ onBack, onNavigate, onConfirmLoan }: { onBack: () => v
 
   return (
     <div className="flex min-h-screen bg-[#f8f9ff]">
-      <DashboardSidebar activePage="dashboard" onNavigate={onNavigate} />
+      <DashboardSidebar activePage="dashboard" onNavigate={onNavigate} onLogout={onLogout} />
       <main className="flex-1 px-10 py-8 overflow-y-auto">
         <div className="max-w-[672px]">
           <div className="bg-white rounded-[12px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] overflow-hidden flex flex-col">
@@ -1444,7 +1497,9 @@ function CairanDanaPage({ onBack, onNavigate, onConfirmLoan }: { onBack: () => v
               {/* Limit card */}
               <div className="bg-[#2f6ab7] rounded-[12px] px-6 py-5">
                 <p className={`${font} font-semibold text-[14px] text-[#bfc7e0] tracking-[0.7px] mb-1`}>Limit Tersedia</p>
-                <p className={`${font} font-bold text-[40px] text-white tracking-[-0.4px] leading-none`}>Rp 15.000.000</p>
+                <p className={`${font} font-bold text-[40px] text-white tracking-[-0.4px] leading-none`}>
+                  {`Rp ${limitTersedia.toLocaleString("id-ID")}`}
+                </p>
               </div>
 
               {/* Jumlah Pencairan */}
@@ -1531,7 +1586,7 @@ function CairanDanaPage({ onBack, onNavigate, onConfirmLoan }: { onBack: () => v
                 onClick={() => { if (jumlah > 0) { onConfirmLoan(jumlah, lamaBulan); onBack(); } }}
                 className={`${font} font-bold text-[16px] text-white h-[48px] px-8 rounded-[8px] transition-colors ${jumlah > 0 ? "bg-[#016b55] cursor-pointer" : "bg-[#a0a0a0] cursor-not-allowed"}`}
               >
-                Cairkan Dana
+                Cairkan Sekarang
               </motion.button>
             </div>
           </div>
@@ -1542,12 +1597,15 @@ function CairanDanaPage({ onBack, onNavigate, onConfirmLoan }: { onBack: () => v
 }
 
 // ── Bayar Tagihan page ────────────────────────────────────────────────────────
-function BayarTagihanPage({ loanData, onBack, onNavigate }: {
+function BayarTagihanPage({ loanData, onBack, onNavigate, onClearLoan, onLogout }: {
   loanData: { amount: number; duration: number };
   onBack: () => void;
   onNavigate: (page: Page) => void;
+  onClearLoan: () => void;
+  onLogout: () => void;
 }) {
   const font = "font-['Plus_Jakarta_Sans',sans-serif]";
+  const [paid, setPaid] = useState(false);
   const { amount, duration } = loanData;
 
   const pokokPerBulan = amount / duration;
@@ -1562,7 +1620,7 @@ function BayarTagihanPage({ loanData, onBack, onNavigate }: {
 
   return (
     <div className="flex min-h-screen bg-[#f8f9ff]">
-      <DashboardSidebar activePage="dashboard" onNavigate={onNavigate} />
+      <DashboardSidebar activePage="dashboard" onNavigate={onNavigate} onLogout={onLogout} />
       <main className="flex-1 px-10 py-8 overflow-y-auto">
         <div className="max-w-[672px]">
           <div className="bg-white rounded-[12px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] overflow-hidden flex flex-col">
@@ -1578,11 +1636,15 @@ function BayarTagihanPage({ loanData, onBack, onNavigate }: {
                 <div className="flex justify-between mb-3">
                   <div>
                     <p className={`${font} font-semibold text-[14px] text-[#bfc7e0] tracking-[0.7px] uppercase mb-1`}>ID PINJAMAN</p>
-                    <p className={`${font} font-bold text-[16px] text-white`}>MIND-2024-8892</p>
+                    <p className={`${font} font-bold text-[16px] text-white`}>
+                      {`MIND-${new Date().getFullYear()}-${Math.floor(Math.random() * 9000 + 1000)}`}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className={`${font} font-semibold text-[14px] text-[#bfc7e0] tracking-[0.7px] uppercase mb-1`}>JATUH TEMPO</p>
-                    <p className={`${font} font-bold text-[16px] text-white`}>28 Mei 2024</p>
+                    <p className={`${font} font-bold text-[16px] text-white`}>
+                     {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                  </p>
                   </div>
                 </div>
                 <p className={`${font} font-semibold text-[14px] text-[#bfc7e0] mb-1`}>Total Tagihan</p>
@@ -1636,13 +1698,27 @@ function BayarTagihanPage({ loanData, onBack, onNavigate }: {
               <button onClick={onBack} className={`${font} font-bold text-[16px] text-[#2f6ab7] hover:underline`}>
                 Batal
               </button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                className={`${font} font-bold text-[16px] text-white bg-[#016b55] h-[48px] px-8 rounded-[8px]`}
-              >
-                Bayar Sekarang
-              </motion.button>
+              {paid ? (
+                <div className="flex items-center gap-2 bg-[#e0faf4] text-[#006b55] px-6 py-3 rounded-[8px]">
+                  <CheckCircle className="size-5" />
+                  <span className={`${font} font-bold text-[15px]`}>Pembayaran Berhasil!</span>
+                </div>
+              ) : (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => {
+                    setPaid(true);
+                    setTimeout(() => {
+                      onClearLoan();
+                      onBack();
+                    }, 1500);
+                  }}
+                  className={`${font} font-bold text-[16px] text-white bg-[#016b55] h-[48px] px-8 rounded-[8px]`}
+                >
+                  Bayar Sekarang
+                </motion.button>
+              )}
             </div>
           </div>
         </div>
@@ -1652,12 +1728,15 @@ function BayarTagihanPage({ loanData, onBack, onNavigate }: {
 }
 
 // ── Profile page ──────────────────────────────────────────────────────────────
-function ProfilePage({ profile, onUpdatePersonal, onUpdateBusiness, onNavigate, showCompletionWarning = false }: {
+function ProfilePage({ profile, photoUrl, onPhotoChange, onUpdatePersonal, onUpdateBusiness, onNavigate, showCompletionWarning = false, onLogout }: {
   profile: UserProfile;
+  photoUrl: string | null;
+  onPhotoChange: (url: string | null) => void;
   onUpdatePersonal: (data: Pick<UserProfile, "nik" | "nama" | "email" | "telepon" | "alamat">) => void;
   onUpdateBusiness: (data: Omit<UserProfile, "nik" | "nama" | "email" | "telepon" | "alamat">) => void;
   onNavigate: (page: Page) => void;
   showCompletionWarning?: boolean;
+  onLogout: () => void;
 }) {
   const [editingPersonal, setEditingPersonal] = useState(false);
   const [editingBusiness, setEditingBusiness] = useState(false);
@@ -1665,19 +1744,26 @@ function ProfilePage({ profile, onUpdatePersonal, onUpdateBusiness, onNavigate, 
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState("");
   const uploadRef = useRef<HTMLInputElement>(null);
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPhotoUrl(URL.createObjectURL(file)); // tampil langsung
-    try {
-      const { apiUploadFoto } = await import("./services/api");
-      await apiUploadFoto(file); // simpan ke backend
-    } catch (err) {
-      console.error("Gagal upload foto:", err);
-    }
+
+    // Konversi ke base64 supaya bisa disimpan di localStorage
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target?.result as string;
+      onPhotoChange(base64);
+      localStorage.setItem("modalin_photo", base64);
+      try {
+        const { apiUploadFoto } = await import("./services/api");
+        await apiUploadFoto(file);
+      } catch (err) {
+        console.error("Gagal upload foto:", err);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const infoLabel = "font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[12px] tracking-[1.2px] uppercase text-[#757680]";
@@ -1686,7 +1772,7 @@ function ProfilePage({ profile, onUpdatePersonal, onUpdateBusiness, onNavigate, 
 
   return (
     <div className="flex min-h-screen bg-[#f8f9ff]">
-      <DashboardSidebar activePage="profile" onNavigate={onNavigate} />
+      <DashboardSidebar activePage="profile" onNavigate={onNavigate} onLogout={onLogout} />
 
       <main className="flex-1 px-10 py-8 overflow-y-auto">
         <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-[40px] tracking-[-0.4px] text-[#001038] mb-6">
@@ -1725,12 +1811,27 @@ function ProfilePage({ profile, onUpdatePersonal, onUpdateBusiness, onNavigate, 
                 <img src={imgPerson} alt="" className="size-[106px] object-contain opacity-51" />
               )}
             </div>
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-[#2f6ab7] text-white text-[13px] font-medium font-['Plus_Jakarta_Sans',sans-serif] tracking-[0.7px] px-3 py-1 rounded-[6px] whitespace-nowrap hover:bg-[#2559a0] transition-colors"
-            >
-              Edit Foto Profile
-            </button>
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="bg-[#2f6ab7] text-white text-[12px] font-medium font-['Plus_Jakarta_Sans',sans-serif] px-2 py-1 rounded-l-[6px] whitespace-nowrap hover:bg-[#2559a0] transition-colors"
+              >
+                Ganti Foto
+              </button>
+              <button
+                onClick={async () => {
+                  onPhotoChange(null);
+                  localStorage.removeItem("modalin_photo");
+                  try {
+                    const { apiHapusFoto } = await import("./services/api");
+                    await apiHapusFoto();
+                  } catch (err) { console.error(err); }
+                }}
+                className="bg-[#ba1a1a] text-white text-[12px] font-medium font-['Plus_Jakarta_Sans',sans-serif] px-2 py-1 rounded-r-[6px] whitespace-nowrap hover:bg-[#93000a] transition-colors"
+              >
+                Hapus Foto
+              </button>
+            </div>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
           </div>
           <div>
@@ -1802,10 +1903,10 @@ function ProfilePage({ profile, onUpdatePersonal, onUpdateBusiness, onNavigate, 
 
               <h3 className="font-['Plus_Jakarta_Sans',sans-serif] font-semibold text-[20px] text-[#001038] mb-4">Data Usaha</h3>
               <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                <div><p className={infoLabel}>Rata-rata Omzet Bulanan (Rp)</p><p className={`${infoValue} min-h-[24px]`}>{profile.omzetBulanan}</p></div>
-                <div><p className={infoLabel}>Rata-rata Pengeluaran Bulanan (Rp)</p><p className={`${infoValue} min-h-[24px]`}>{profile.pengeluaranBulanan}</p></div>
-                <div><p className={infoLabel}>Estimasi Total Aset Usaha (Rp)</p><p className={`${infoValue} min-h-[24px]`}>{profile.totalAset}</p></div>
-                <div><p className={infoLabel}>Total Hutang (Rp)</p><p className={`${infoValue} min-h-[24px]`}>{profile.totalHutang}</p></div>
+                <div><p className={infoLabel}>Rata-rata Omzet Bulanan (Rp)</p><p className={`${infoValue} min-h-[24px]`}>{profile.omzetBulanan ? parseInt(profile.omzetBulanan).toLocaleString("id-ID") : ""}</p></div>
+                <div><p className={infoLabel}>Rata-rata Pengeluaran Bulanan (Rp)</p><p className={`${infoValue} min-h-[24px]`}>{profile.pengeluaranBulanan ? parseInt(profile.pengeluaranBulanan).toLocaleString("id-ID") : ""}</p></div>
+                <div><p className={infoLabel}>Estimasi Total Aset Usaha (Rp)</p><p className={`${infoValue} min-h-[24px]`}>{profile.totalAset ? parseInt(profile.totalAset).toLocaleString("id-ID") : ""}</p></div>
+                <div><p className={infoLabel}>Total Hutang (Rp)</p><p className={`${infoValue} min-h-[24px]`}>{profile.totalHutang ? parseInt(profile.totalHutang).toLocaleString("id-ID") : ""}</p></div>
                 <div><p className={infoLabel}>Frekuensi Transaksi Digital per Bulan</p><p className={`${infoValue} min-h-[24px]`}>{profile.frekuensiTransaksi}</p></div>
               </div>
             </div>
@@ -1847,6 +1948,21 @@ function ProfilePage({ profile, onUpdatePersonal, onUpdateBusiness, onNavigate, 
                   try {
                   const result = await apiUploadFiles(files);
                   setUploadMsg(`✅ ${result.data.files.length} file berhasil diupload!`);
+                  const extracted = result.data.dataTerekstrak;
+                  if (extracted) {
+                    onUpdateBusiness({
+                      identitasUsaha: profile.identitasUsaha,
+                      namaPemilik: profile.namaPemilik,
+                      jenisUsaha: profile.jenisUsaha,
+                      alamatUsaha: profile.alamatUsaha,
+                      lamaBerdiri: profile.lamaBerdiri,
+                      omzetBulanan: extracted.omzetBulanan ?? profile.omzetBulanan,
+                      pengeluaranBulanan: extracted.pengeluaranBulanan ?? profile.pengeluaranBulanan,
+                      totalHutang: extracted.totalHutang ?? profile.totalHutang,
+                      totalAset: extracted.totalAset ?? profile.totalAset,
+                      frekuensiTransaksi: extracted.frekuensiTransaksi ?? profile.frekuensiTransaksi,
+                    });
+                  }
                   } catch (err: unknown) {
                     setUploadMsg(`❌ ${err instanceof Error ? err.message : "Gagal upload."}`);
                   } finally {
@@ -2191,7 +2307,7 @@ function NewPasswordPage({ onLogin, resetToken }: { onLogin: () => void; resetTo
 }
 
 // ── Shared dashboard header ───────────────────────────────────────────────────
-function DashboardHeader({ profile, onNavigate }: { profile: UserProfile; onNavigate: (p: Page) => void }) {
+function DashboardHeader({ profile, onNavigate, photoUrl }: { profile: UserProfile; onNavigate: (p: Page) => void; photoUrl?: string | null }) {
   const font = "font-['Plus_Jakarta_Sans',sans-serif]";
   return (
     <div className="flex items-start justify-between mb-6">
@@ -2199,10 +2315,14 @@ function DashboardHeader({ profile, onNavigate }: { profile: UserProfile; onNavi
         <h1 className={`${font} font-semibold text-[28px] text-[#001038]`}>
           Selamat datang, {profile.identitasUsaha || profile.nama || "Pengguna"}
         </h1>
-        <p className={`${font} text-[14px] text-[#44464f] tracking-[0.7px] mt-1`}>Analisis terakhir: 30 February 2030</p>
+        <p className={`${font} text-[14px] text-[#44464f] tracking-[0.7px] mt-1`}>Analisis terakhir: {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
       </div>
       <div className="flex items-center gap-3 shrink-0 cursor-pointer" onClick={() => onNavigate("profile")}>
-        <img src={imgPerson} alt="" className="size-[44px] rounded-full object-cover" />
+        {photoUrl ? (
+          <img src={photoUrl} alt="" className="size-[44px] rounded-full object-cover" />
+        ) : (
+          <img src={imgPerson} alt="" className="size-[44px] rounded-full object-cover" />
+        )}
         <span className={`${font} font-semibold text-[16px] text-[#001038]`}>
           {(profile.nama || "Pengguna").split(" ")[0]}
         </span>
@@ -2235,11 +2355,30 @@ function FiveCCard({ label, score, color, barColor, desc }: { label: string; sco
   );
 }
 
-function HasilScoringPage({ profile, onNavigate }: { profile: UserProfile; onNavigate: (p: Page) => void }) {
+function HasilScoringPage({ profile, onNavigate, onLogout }: { profile: UserProfile; onNavigate: (p: Page) => void; onLogout: () => void }) {
   const font = "font-['Plus_Jakarta_Sans',sans-serif]";
   const circumference = 2 * Math.PI * 83;
-  const scoreVal = useCountUp(78, 1500);
-  const fiveCItems = [
+
+  // ── Fetch data scoring dari AI API via backend ───────────────────────────
+  const [scoringData, setScoringData] = useState<any>(null);
+  const [loadingScoring, setLoadingScoring] = useState(true);
+
+  useEffect(() => {
+    import("./services/api").then(({ apiGetScoring }) => {
+      apiGetScoring()
+        .then((data) => setScoringData(data))
+        .catch((err) => console.error("Scoring error:", err))
+        .finally(() => setLoadingScoring(false));
+    });
+  }, []);
+
+  // Ambil nilai dari API, fallback ke default kalau belum ada
+  const totalSkor = scoringData?.skor_kredit ?? 78;
+  const statusKredit = scoringData?.status ?? "Baik";
+  const pesanAI = scoringData?.pesan ?? "Skor Anda berada di atas rata-rata industri UMKM. Menunjukkan profil risiko yang rendah dengan manajemen arus kas yang sangat sehat.";
+
+  const scoreVal = useCountUp(totalSkor, 1500);
+  const fiveCItems = scoringData?.detail ?? [
     { label: "Character", score: 80, color: "#006b55", barColor: "#006b55", desc: "Riwayat pembayaran tepat waktu sangat konsisten." },
     { label: "Capacity", score: 75, color: "#006b55", barColor: "#006b55", desc: "Kemampuan membayar kembali masih dalam batas aman." },
     { label: "Capital", score: 65, color: "#fbbf24", barColor: "#fbbf24", desc: "Modal kerja mandiri perlu ditingkatkan kembali." },
@@ -2247,7 +2386,7 @@ function HasilScoringPage({ profile, onNavigate }: { profile: UserProfile; onNav
   ];
   return (
     <div className="flex min-h-screen bg-[#f8f9ff]">
-      <DashboardSidebar activePage="hasil-scoring" onNavigate={onNavigate} />
+      <DashboardSidebar activePage="hasil-scoring" onNavigate={onNavigate} onLogout={onLogout} />
       <main className="flex-1 px-10 py-8 overflow-y-auto">
         <DashboardHeader profile={profile} onNavigate={onNavigate} />
         <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className={`${font} font-bold text-[40px] text-[#001038] tracking-[-0.4px] mb-6`}>
@@ -2268,32 +2407,30 @@ function HasilScoringPage({ profile, onNavigate }: { profile: UserProfile; onNav
                   strokeLinecap="round"
                   strokeDasharray={circumference}
                   initial={{ strokeDashoffset: circumference }}
-                  animate={{ strokeDashoffset: circumference * (1 - 0.78) }}
+                  animate={{ strokeDashoffset: circumference * (1 - totalSkor / 1000) }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
                   transform="rotate(-90 90 90)"
                 />
               </svg>
               <div className="flex flex-col items-center">
                 <span className={`${font} font-extrabold text-[64px] text-[#001038] leading-none tracking-[-1.28px]`}>{scoreVal}</span>
-                <span className={`${font} font-semibold text-[14px] text-[#44464f] tracking-[0.7px]`}>DARI 100</span>
+                <span className={`${font} font-semibold text-[14px] text-[#44464f] tracking-[0.7px]`}>DARI 1000</span>
               </div>
             </div>
             {/* Info */}
             <div>
-              <p className={`${font} font-semibold text-[28px] text-[#001038] mb-3`}>Kualitas Kredit: Baik</p>
+              <p className={`${font} font-semibold text-[28px] text-[#001038] mb-3`}>Kualitas Kredit: {loadingScoring ? "..." : statusKredit}</p>
               <p className={`${font} font-normal text-[16px] text-[#44464f] leading-[24px] mb-4`}>
-                Skor Anda berada di atas rata-rata industri UMKM. Menunjukkan profil risiko yang rendah dengan manajemen arus kas yang sangat sehat.
+                {loadingScoring ? "Memuat data scoring..." : pesanAI}
               </p>
-              <span className={`${font} font-semibold text-[14px] text-[#001038] tracking-[0.7px] bg-[#eff4ff] rounded-[8px] px-4 py-1.5`}>Resiko Rendah</span>
+              <span className={`${font} font-semibold text-[14px] text-[#001038] tracking-[0.7px] bg-[#eff4ff] rounded-[8px] px-4 py-1.5`}>{loadingScoring ? "..." : (totalSkor >= 600 ? "Resiko Rendah" : totalSkor >= 400 ? "Resiko Sedang" : "Resiko Tinggi")}</span>
             </div>
           </motion.div>
           {/* AI Advisor */}
           <motion.div variants={fadeUp} className="w-[309px] shrink-0 bg-[rgba(81,249,205,0.2)] border-2 border-[#28dfb5] rounded-[12px] p-7 flex flex-col gap-4">
             <p className={`${font} font-semibold text-[20px] text-[#007059]`}>AI Advisor</p>
             <p className={`${font} font-normal text-[16px] text-[#44464f] leading-[26px] flex-1`}>
-              "Bisnis Anda menunjukkan{" "}
-              <span className={`${font} font-bold text-[#006b55]`}>pertumbuhan positif 15%</span>
-              {" "}dalam 3 bulan terakhir. Meskipun rasio utang meningkat tipis, konsistensi setoran harian Anda mengompensasi risiko tersebut. Kami menyarankan untuk fokus pada optimalisasi stok inventaris."
+              {loadingScoring ? "Memuat analisis AI..." : `"${pesanAI}"`}
             </p>
             <button
               onClick={() => onNavigate("rekomendasi")}
@@ -2314,7 +2451,7 @@ function HasilScoringPage({ profile, onNavigate }: { profile: UserProfile; onNav
 
         {/* Footer */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="border-t border-[#e9eaf1] pt-6 flex items-center justify-end gap-4">
-          <button className={`${font} font-semibold text-[14px] text-[#001038] tracking-[0.7px] hover:underline`}>Unduh Laporan PDF</button>
+
           <button
             onClick={() => onNavigate("rekomendasi")}
             className={`${font} font-semibold text-[14px] text-[#001038] tracking-[0.7px] bg-[#51f9cd] rounded-[8px] px-6 py-2.5 hover:bg-[#28dfb5] transition-colors`}
@@ -2328,19 +2465,43 @@ function HasilScoringPage({ profile, onNavigate }: { profile: UserProfile; onNav
 }
 
 // ── Anomali Arus Kas page ─────────────────────────────────────────────────────
-function AnomaliArusKasPage({ profile, onNavigate }: { profile: UserProfile; onNavigate: (p: Page) => void }) {
+function AnomaliArusKasPage({ profile, onNavigate, onLogout }: { profile: UserProfile; onNavigate: (p: Page) => void; onLogout: () => void }) {
   const font = "font-['Plus_Jakarta_Sans',sans-serif]";
   const [activeFilter, setActiveFilter] = useState<"Semua" | "Risiko Tinggi" | "Risiko Sedang">("Semua");
-  const pemasukan = useCountUp(84500000, 1400);
-  const pengeluaran = useCountUp(50500000, 1400);
-  const bersih = useCountUp(20500000, 1400);
-  const anomaliCount = useCountUp(3, 800);
 
-  const allAnomalies = [
-    { tanggal: "12 Mei 2024", tipe: "Pengeluaran Operasional", nilai: "Rp 15.200.000", risiko: "Tinggi" as const, keterangan: "Pembelian inventaris di luar jam operasional normal." },
-    { tanggal: "08 Mei 2024", tipe: "Pola Pendapatan", nilai: "Rp 2.500.000", risiko: "Sedang" as const, keterangan: "Penurunan pendapatan harian yang signifikan." },
-    { tanggal: "02 Mei 2024", tipe: "Transfer Keluar", nilai: "Rp 8.750.000", risiko: "Tinggi" as const, keterangan: "Transfer ke rekening baru yang tidak terdaftar." },
-  ];
+  // ── Ambil data anomali real dari backend ──────────────────────────────────
+  const [anomaliData, setAnomaliData] = useState<any>(null);
+  const [loadingAnomali, setLoadingAnomali] = useState(true);
+
+  useEffect(() => {
+    import("./services/api").then(({ apiGetAnomali }) => {
+      apiGetAnomali()
+        .then((data) => setAnomaliData(data))
+        .catch(() => {})
+        .finally(() => setLoadingAnomali(false));
+    });
+  }, []);
+
+  // Pakai data dari profil user (sudah diisi saat edit profil bisnis)
+  const toNum = (str: string) => parseInt((str || "0").replace(/\D/g, "")) || 0;
+  const omzetReal       = toNum(profile.omzetBulanan);
+  const pengeluaranReal = toNum(profile.pengeluaranBulanan);
+  const bersihReal      = omzetReal - pengeluaranReal;
+  const anomaliList     = anomaliData?.anomali ?? [];
+  const totalAnomali    = anomaliList.length;
+
+  const pemasukan   = useCountUp(omzetReal, 1400);
+  const pengeluaran = useCountUp(pengeluaranReal, 1400);
+  const bersih      = useCountUp(Math.abs(bersihReal), 1400);
+  const anomaliCount = useCountUp(totalAnomali, 800);
+
+  const allAnomalies = anomaliList.map((a: any) => ({
+    tanggal: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+    tipe: a.tipe ?? "Anomali Arus Kas",
+    nilai: `Rp ${Math.abs(omzetReal - pengeluaranReal).toLocaleString("id-ID")}`,
+    risiko: (a.tipe === "Kritis" ? "Tinggi" : "Sedang") as "Tinggi" | "Sedang",
+    keterangan: a.pesan ?? "",
+  }));
   const filtered = activeFilter === "Semua" ? allAnomalies : allAnomalies.filter(a => a.risiko === (activeFilter === "Risiko Tinggi" ? "Tinggi" : "Sedang"));
 
   const risikoColor = (r: "Tinggi" | "Sedang") => r === "Tinggi" ? { bg: "bg-[#ba1a1a]", text: "text-white" } : { bg: "bg-[#ff9800]", text: "text-white" };
@@ -2351,23 +2512,14 @@ function AnomaliArusKasPage({ profile, onNavigate }: { profile: UserProfile; onN
 
   return (
     <div className="flex min-h-screen bg-[#f8f9ff]">
-      <DashboardSidebar activePage="anomali-arus-kas" onNavigate={onNavigate} />
+      <DashboardSidebar activePage="anomali-arus-kas" onNavigate={onNavigate} onLogout={onLogout} />
       <main className="flex-1 px-10 py-8 overflow-y-auto">
         <DashboardHeader profile={profile} onNavigate={onNavigate} />
         <h2 className={`${font} font-bold text-[40px] text-[#001038] tracking-[-0.4px] mb-1`}>Deteksi Anomali Arus Kas</h2>
         <p className={`${font} font-semibold text-[14px] text-[#44464f] mb-0.5`}>Analisis Anomali Finansial</p>
         <p className={`${font} font-normal text-[14px] text-[#44464f] mb-5`}>Pantau aktivitas yang mencurigakan secara real-time untuk kesehatan finansial UMKM.</p>
 
-        {/* Warning banner */}
-        <div className="flex items-start gap-4 bg-[rgba(255,218,214,0.5)] border border-[#ffb4ab] rounded-[12px] px-5 py-4 mb-6">
-          <div className="size-[32px] rounded-full bg-[#ba1a1a] flex items-center justify-center shrink-0 mt-0.5">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M1 21L12 2l11 19H1zm11-3v-2h-2v2h2zm0-4v-4h-2v4h2z"/></svg>
-          </div>
-          <div>
-            <p className={`${font} font-semibold text-[16px] text-[#ba1a1a]`}>Waspada: Aktivitas Terdeteksi</p>
-            <p className={`${font} font-normal text-[14px] text-[#44464f]`}>Terdeteksi 3 anomali signifikan dalam 30 hari terakhir yang memerlukan peninjauan segera.</p>
-          </div>
-        </div>
+
 
         {/* 4 stat cards */}
         <motion.div initial="hidden" animate="visible" variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }} className="grid grid-cols-4 gap-4 mb-5">
@@ -2397,36 +2549,36 @@ function AnomaliArusKasPage({ profile, onNavigate }: { profile: UserProfile; onN
           <motion.div variants={fadeUp} className="bg-white rounded-[12px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] p-5">
             <p className={`${font} font-normal text-[14px] text-[#44464f] mb-2`}>Arus Kas Bersih</p>
             <p className={`${font} font-bold text-[22px] text-[#001038] mb-3`}>Rp {bersih.toLocaleString("id-ID")}</p>
-            <span className={`${font} font-semibold text-[12px] text-[#006b55] bg-[#e0faf4] rounded-full px-3 py-1 flex items-center gap-1 w-fit mb-2`}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="#006b55"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-              SURPLUS
+            <span className={`${font} font-semibold text-[12px] rounded-full px-3 py-1 flex items-center gap-1 w-fit mb-2 ${bersihReal >= 0 ? "text-[#006b55] bg-[#e0faf4]" : "text-[#ba1a1a] bg-[#ffe4e1]"}`}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+              {bersihReal >= 0 ? "SURPLUS" : "DEFISIT"}
             </span>
-            <p className={`${font} font-normal text-[12px] text-[#44464f]`}>Kondisi keuangan stabil</p>
+            <p className={`${font} font-normal text-[12px] text-[#44464f]`}>{bersihReal >= 0 ? "Kondisi keuangan stabil" : "Perlu perhatian segera"}</p>
           </motion.div>
           {/* Total Anomali */}
           <motion.div variants={fadeUp} className="bg-white rounded-[12px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] p-5">
             <p className={`${font} font-normal text-[14px] text-[#44464f] mb-2`}>Total Anomali</p>
             <div className="flex items-center gap-3 mb-2">
-              <div className="size-[40px] rounded-full bg-[rgba(186,26,26,0.1)] flex items-center justify-center">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="#ba1a1a"><path d="M1 21L12 2l11 19H1zm11-3v-2h-2v2h2zm0-4v-4h-2v4h2z"/></svg>
+              <div className={`size-[40px] rounded-full flex items-center justify-center ${totalAnomali > 0 ? "bg-[rgba(186,26,26,0.12)]" : "bg-[rgba(100,100,100,0.1)]"}`}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={totalAnomali > 0 ? "#ba1a1a" : "#757575"}><path d="M1 21L12 2l11 19H1zm11-3v-2h-2v2h2zm0-4v-4h-2v4h2z"/></svg>
               </div>
             </div>
             <p className={`${font} font-extrabold text-[40px] text-[#001038] leading-none mb-1`}>{anomaliCount}</p>
-            <p className={`${font} font-normal text-[12px] text-[#ba1a1a]`}>+2 dari bulan lalu</p>
           </motion.div>
         </motion.div>
 
         {/* Middle row */}
-        <motion.div initial="hidden" animate="visible" variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }} className="grid grid-cols-2 gap-4 mb-6">
+        <motion.div initial="hidden" animate="visible" variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }} className="grid grid-cols-1 gap-4 mb-6">
           <motion.div variants={fadeUp} className="bg-white rounded-[12px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] p-6">
             <p className={`${font} font-normal text-[14px] text-[#44464f] mb-2`}>Anomali Tertinggi</p>
-            <p className={`${font} font-bold text-[28px] text-[#001038] mb-1`}>Rp <CountUp to={15200000} /></p>
-            <p className={`${font} font-normal text-[14px] text-[#44464f]`}>Terjadi pada 12 Mei 2024</p>
+            <p className={`${font} font-bold text-[28px] text-[#001038] mb-1`}>
+              Rp <CountUp to={Math.abs(omzetReal - pengeluaranReal)} />
+            </p>
+            <p className={`${font} font-normal text-[14px] text-[#44464f]`}>
+              {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+            </p>
           </motion.div>
-          <motion.div variants={fadeUp} className="bg-white rounded-[12px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] p-6">
-            <p className={`${font} font-normal text-[14px] text-[#44464f] mb-4`}>Tipe Paling Sering</p>
-            <span className={`${font} font-semibold text-[14px] text-[#001038] bg-[#51f9cd] rounded-full px-4 py-2 tracking-[0.7px]`}>PENGELUARAN OPERASIONAL</span>
-          </motion.div>
+
         </motion.div>
 
         {/* Table */}
@@ -2477,11 +2629,21 @@ function AnomaliArusKasPage({ profile, onNavigate }: { profile: UserProfile; onN
 }
 
 // ── Rekomendasi page ──────────────────────────────────────────────────────────
-function RekomendasiPage({ profile, onNavigate }: { profile: UserProfile; onNavigate: (p: Page) => void }) {
+function RekomendasiPage({ profile, onNavigate, onLogout }: { profile: UserProfile; onNavigate: (p: Page) => void; onLogout: () => void }) {
   const font = "font-['Plus_Jakarta_Sans',sans-serif]";
   const [connected, setConnected] = useState<Record<string, boolean>>({
     shopee: true, rating: true, visual: true,
   });
+
+  const [rekomendasiData, setRekomendasiData] = useState<any>(null);
+
+useEffect(() => {
+  import("./services/api").then(({ apiGetRekomendasi }) => {
+    apiGetRekomendasi()
+      .then((data) => setRekomendasiData(data))
+      .catch(() => {});
+  });
+}, []);
 
   const actions = [
     {
@@ -2544,15 +2706,50 @@ function RekomendasiPage({ profile, onNavigate }: { profile: UserProfile; onNavi
   const doneCount = Object.values(connected).filter(Boolean).length;
   const progressPct = Math.round((doneCount / actions.length) * 100);
 
+  const toNum = (str: string) => parseInt((str || "0").replace(/\D/g, "")) || 0;
+  const omzet = toNum(profile.omzetBulanan);
+  const pengeluaran = toNum(profile.pengeluaranBulanan);
+  const hutang = toNum(profile.totalHutang);
+  const aset = toNum(profile.totalAset);
+  const rasioKas = omzet > 0 ? (omzet - pengeluaran) / omzet : 0;
+  const rasioHutang = omzet > 0 ? hutang / (omzet * 12) : 0;
+
   const categoryCards = [
-    { badge: "Kekuatan Utama", badgeColor: "bg-[rgba(81,249,205,0.3)] text-[#006b55]", title: "Stabilitas Arus", desc: "Konsistensi arus kas masuk Anda menunjukkan fundamental bisnis yang sehat dan daya tahan yang kuat terhadap fluktuasi pasar." },
-    { badge: "Perlu Perbaikan", badgeColor: "bg-[rgba(254,249,195,0.5)] text-[#a16207]", title: "Rasio Hutang", desc: "Rasio hutang terhadap pendapatan (DTI) Anda sedikit di atas batas ideal. Mengurangi beban cicilan akan meningkatkan skor kapasitas Anda." },
-    { badge: "Prioritas Tindakan", badgeColor: "bg-[rgba(255,218,214,0.5)] text-[#ba1a1a]", title: "Legalitas Usaha", desc: "Pembaruan dokumen legalitas mendesak diperlukan untuk memastikan kelancaran pengajuan kredit modal kerja di masa depan." },
+    {
+      badge: rasioKas >= 0.3 ? "Kekuatan Utama" : "Perlu Perbaikan",
+      badgeColor: rasioKas >= 0.3
+        ? "bg-[rgba(81,249,205,0.3)] text-[#006b55]"
+        : "bg-[rgba(254,249,195,0.5)] text-[#a16207]",
+      title: "Stabilitas Arus",
+      desc: rasioKas >= 0.3
+        ? `Margin kas ${(rasioKas * 100).toFixed(0)}% menunjukkan arus kas yang sehat dan fundamental bisnis yang kuat.`
+        : `Margin kas ${(rasioKas * 100).toFixed(0)}% perlu ditingkatkan. Kurangi pengeluaran atau tingkatkan omzet.`,
+    },
+    {
+      badge: rasioHutang <= 0.5 ? "Kekuatan Utama" : "Perlu Perbaikan",
+      badgeColor: rasioHutang <= 0.5
+        ? "bg-[rgba(81,249,205,0.3)] text-[#006b55]"
+        : "bg-[rgba(254,249,195,0.5)] text-[#a16207]",
+      title: "Rasio Hutang",
+      desc: rasioHutang <= 0.5
+        ? `Rasio hutang ${(rasioHutang * 100).toFixed(0)}% dari pendapatan tahunan masih dalam batas aman.`
+        : `Rasio hutang ${(rasioHutang * 100).toFixed(0)}% dari pendapatan tahunan. Pertimbangkan untuk mengurangi beban hutang.`,
+    },
+    {
+      badge: aset > hutang ? "Kekuatan Utama" : "Prioritas Tindakan",
+      badgeColor: aset > hutang
+        ? "bg-[rgba(81,249,205,0.3)] text-[#006b55]"
+        : "bg-[rgba(255,218,214,0.5)] text-[#ba1a1a]",
+      title: "Kondisi Aset",
+      desc: aset > hutang
+        ? `Total aset Rp ${aset.toLocaleString("id-ID")} melebihi hutang. Posisi keuangan positif.`
+        : `Total aset lebih kecil dari hutang. Prioritaskan peningkatan aset atau pelunasan hutang.`,
+    },
   ];
 
   return (
     <div className="flex min-h-screen bg-[#f8f9ff]">
-      <DashboardSidebar activePage="rekomendasi" onNavigate={onNavigate} />
+      <DashboardSidebar activePage="rekomendasi" onNavigate={onNavigate} onLogout={onLogout} />
       <main className="flex-1 px-10 py-8 overflow-y-auto">
         <DashboardHeader profile={profile} onNavigate={onNavigate} />
         <h2 className={`${font} font-bold text-[40px] text-[#001038] tracking-[-0.4px] mb-1`}>Rencana Aksi Finansial Anda</h2>
@@ -2638,10 +2835,18 @@ function isProfileComplete(p: UserProfile) {
 }
 
 export default function App() {
-  const [page, setPage] = useState<Page>("home");
+  const [page, setPage] = useState<Page>(() => {
+    const token = localStorage.getItem("modalin_token");
+    const saved = localStorage.getItem("modalin_page") as Page;
+    if (token && saved) return saved;
+    return "home";
+  });
   const [resetEmail, setResetEmail] = useState("");
   const [resetToken, setResetToken] = useState("");
   const [loanData, setLoanData] = useState<{ amount: number; duration: number } | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(() => {
+  return localStorage.getItem("modalin_photo") || null;
+});
   const [userProfile, setUserProfile] = useState<UserProfile>({
     nik: "", nama: "", email: "", telepon: "", alamat: "",
     identitasUsaha: "", namaPemilik: "", jenisUsaha: "", alamatUsaha: "",
@@ -2654,15 +2859,60 @@ export default function App() {
 
   const protectedPages: Page[] = ["dashboard", "cairkan-dana", "bayar-tagihan", "hasil-scoring", "anomali-arus-kas", "rekomendasi"];
 
-  const navigateTo = (p: Page) => {
-    if (protectedPages.includes(p) && !isProfileComplete(userProfile)) {
-      setShowProfileWarning(true);
-      setPage("profile");
-    } else {
-      setShowProfileWarning(false);
-      setPage(p);
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const token = localStorage.getItem("modalin_token");
+      if (event.state?.page) {
+        setPage(event.state.page as Page);
+        localStorage.setItem("modalin_page", event.state.page);
+      } else {
+        setPage(token ? "dashboard" : "home");
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  // Auto-login & load profil jika token masih ada
+  useEffect(() => {
+    const token = localStorage.getItem("modalin_token");
+    if (token) {
+      import("./services/api").then(({ apiGetProfile }) => {
+        apiGetProfile()
+        .then((user) => {
+          setUserProfile((p) => ({ ...p, ...user }));
+          const savedPhoto = localStorage.getItem("modalin_photo");
+          if (savedPhoto && savedPhoto.startsWith("data:image")) {
+            setPhotoUrl(savedPhoto);
+          } else if (user.fotoProfil) {
+            setPhotoUrl(`http://localhost:5000/uploads/${user.fotoProfil}`);
+          }
+          const savedPage = localStorage.getItem("modalin_page") as Page;
+          const targetPage = savedPage || "dashboard";
+          setPage(targetPage);
+        })
+          .catch(() => {
+            localStorage.removeItem("modalin_token");
+            localStorage.removeItem("modalin_page");
+            setPage("home");
+          });
+      });
     }
-  };
+  }, []);
+
+    const navigateTo = (p: Page) => {
+      if (protectedPages.includes(p) && !isProfileComplete(userProfile)) {
+        setShowProfileWarning(true);
+        setPage("profile");
+        localStorage.setItem("modalin_page", "profile");
+        window.history.pushState({ page: "profile" }, "", `#profile`);
+      } else {
+        setShowProfileWarning(false);
+        setPage(p);
+        localStorage.setItem("modalin_page", p);
+        window.history.pushState({ page: p }, "", `#${p}`);
+      }
+    };
 
   const handleNavClick = (id: string) => {
     setActiveNav(id);
@@ -2670,6 +2920,21 @@ export default function App() {
     if (target) {
       target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("modalin_token");
+    localStorage.removeItem("modalin_page");
+    localStorage.removeItem("modalin_photo");
+    setUserProfile({
+      nik: "", nama: "", email: "", telepon: "", alamat: "",
+      identitasUsaha: "", namaPemilik: "", jenisUsaha: "", alamatUsaha: "",
+      lamaBerdiri: "", omzetBulanan: "", pengeluaranBulanan: "", totalHutang: "", totalAset: "", frekuensiTransaksi: "",
+    });
+    setPhotoUrl(null);
+    setLoanData(null);
+    setPage("home");
+    window.history.pushState({}, "", "/");
   };
 
   if (page === "dashboard") {
@@ -2680,6 +2945,7 @@ export default function App() {
         onBayarTagihan={() => navigateTo("bayar-tagihan")}
         onNavigate={(p) => navigateTo(p)}
         loanData={loanData}
+        onLogout={handleLogout}
       />
     );
   }
@@ -2690,6 +2956,8 @@ export default function App() {
         onBack={() => setPage("dashboard")}
         onNavigate={(p) => navigateTo(p)}
         onConfirmLoan={(amount, duration) => setLoanData({ amount, duration })}
+        profile={userProfile}
+        onLogout={handleLogout}
       />
     );
   }
@@ -2700,30 +2968,35 @@ export default function App() {
         loanData={loanData}
         onBack={() => setPage("dashboard")}
         onNavigate={(p) => navigateTo(p)}
+        onClearLoan={() => setLoanData(null)}
+        onLogout={handleLogout}
       />
     );
   }
 
   if (page === "hasil-scoring") {
-    return <HasilScoringPage profile={userProfile} onNavigate={(p) => navigateTo(p)} />;
+    return <HasilScoringPage profile={userProfile} onNavigate={(p) => navigateTo(p)} onLogout={handleLogout} />;
   }
 
   if (page === "anomali-arus-kas") {
-    return <AnomaliArusKasPage profile={userProfile} onNavigate={(p) => navigateTo(p)} />;
+    return <AnomaliArusKasPage profile={userProfile} onNavigate={(p) => navigateTo(p)} onLogout={handleLogout} />;
   }
 
   if (page === "rekomendasi") {
-    return <RekomendasiPage profile={userProfile} onNavigate={(p) => navigateTo(p)} />;
+    return <RekomendasiPage profile={userProfile} onNavigate={(p) => navigateTo(p)} onLogout={handleLogout} />;
   }
 
   if (page === "profile") {
     return (
       <ProfilePage
         profile={userProfile}
+        photoUrl={photoUrl}
+        onPhotoChange={(url) => setPhotoUrl(url)}
         onUpdatePersonal={(data) => setUserProfile((p) => ({ ...p, ...data }))}
         onUpdateBusiness={(data) => setUserProfile((p) => ({ ...p, ...data }))}
         onNavigate={(p) => navigateTo(p)}
         showCompletionWarning={showProfileWarning}
+        onLogout={handleLogout}
       />
     );
   }
@@ -2736,6 +3009,7 @@ export default function App() {
         onComplete={(nik, nama, email) => {
           setUserProfile((p) => ({ ...p, nik, nama, email }));
           setPage("profile");
+          localStorage.setItem("modalin_page", "profile");
           setShowProfileWarning(false);
         }}
       />
@@ -2749,6 +3023,27 @@ export default function App() {
         onForgotPassword={() => setPage("forgot-password")}
         onSuccess={(user) => {
           setUserProfile((p) => ({ ...p, ...user }));
+          if (user.fotoProfil) {
+            console.log("fotoProfil dari backend:", user.fotoProfil);
+            const fotoUrl = `http://localhost:5000/uploads/${user.fotoProfil}`;
+            console.log("fotoUrl:", fotoUrl);
+            // Load foto dari backend lalu simpan ke localStorage sebagai base64
+            fetch(fotoUrl)
+              .then(res => res.blob())
+              .then(blob => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                  const base64 = ev.target?.result as string;
+                  localStorage.setItem("modalin_photo", base64);
+                  setPhotoUrl(base64);
+                };
+                reader.readAsDataURL(blob);
+              })
+              .catch(() => {
+              localStorage.setItem("modalin_photo", fotoUrl);
+              setPhotoUrl(fotoUrl);
+            });
+          }
           navigateTo("dashboard");
         }}
       />
@@ -2772,7 +3067,7 @@ export default function App() {
         onSuccess={(resetToken) => {
           setResetToken(resetToken);
           setPage("new-password");
-        }}
+        }} 
       />
     );
   }

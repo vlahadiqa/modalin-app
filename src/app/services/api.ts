@@ -25,10 +25,10 @@ async function request(path: string, options: RequestInit = {}) {
 }
 
 // ── Helper: request multipart (untuk upload file) ───────────
-async function requestForm(path: string, formData: FormData) {
+async function requestForm(path: string, formData: FormData, method = "POST") {
   const token = getToken();
   const res = await fetch(`${BASE_URL}${path}`, {
-    method: "POST",
+    method: method,
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: formData,
   });
@@ -184,5 +184,21 @@ export function isLoggedIn() {
 export async function apiUploadFoto(file: File) {
   const formData = new FormData();
   formData.append("foto", file);
-  return requestForm("/user/profile/photo", formData);
+  return requestForm("/user/profile/photo", formData, "PUT");
+}
+
+export async function apiHapusFoto() {
+  return request("/user/profile/photo", {
+    method: "DELETE",
+  });
+}
+
+export async function apiGetUploadCount(): Promise<number> {
+  const token = localStorage.getItem("modalin_token");
+  const res = await fetch("http://localhost:5000/api/upload/count", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Gagal fetch upload count");
+  const data = await res.json();
+  return data.count ?? 0;
 }

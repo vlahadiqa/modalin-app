@@ -6,7 +6,10 @@ const {
   updatePersonal,
   updateBusiness,
   changePassword,
+  uploadFoto,
+  hapusFoto,
 } = require("../controllers/userController");
+const upload = require("../middleware/upload");
 
 // Semua route di sini butuh login (protect)
 router.use(protect);
@@ -22,5 +25,11 @@ router.put("/profile/business", updateBusiness);
 
 // PUT /api/user/profile/password
 router.put("/profile/password", changePassword);
+
+// PUT /api/user/profile/photo
+router.put("/profile/photo", upload.single("foto"), uploadFoto);
+
+// DELETE /api/user/profile/photo
+router.delete("/profile/photo", hapusFoto);
 
 module.exports = router;

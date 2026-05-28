@@ -137,6 +137,7 @@ exports.login = async (req, res) => {
           totalHutang: user.totalHutang,
           totalAset: user.totalAset,
           frekuensiTransaksi: user.frekuensiTransaksi,
+           fotoProfil: user.fotoProfil || "",
         },
       },
     });

@@ -19,3 +19,14 @@ router.post("/data", upload.array("files", 5), (err, req, res, next) => {
 router.get("/riwayat", getRiwayat);
 
 module.exports = router;
+
+// GET /api/upload/count  — jumlah total file yang diupload user
+router.get("/count", async (req, res) => {
+  try {
+    const Upload = require("../models/Upload");
+    const total = await Upload.countDocuments({ userId: req.user._id });
+    res.json({ status: "success", count: total });
+  } catch (error) {
+    res.status(500).json({ status: "error", message: "Terjadi kesalahan server." });
+  }
+});

@@ -25,6 +25,8 @@ app.use(cors({
 // Parsing JSON body
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+const path = require("path");
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // ── Health Check ──────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {

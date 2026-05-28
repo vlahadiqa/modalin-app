@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const path = require("path");
 
 // ══════════════════════════════════════════════════════════════════════════════
 // GET /api/user/profile  (butuh login)
@@ -17,13 +18,11 @@ exports.getProfile = async (req, res) => {
 
 // ══════════════════════════════════════════════════════════════════════════════
 // PUT /api/user/profile/personal  (butuh login)
-// Update: nik, nama, email, telepon, alamat
 // ══════════════════════════════════════════════════════════════════════════════
 exports.updatePersonal = async (req, res) => {
   try {
     const { nik, nama, email, telepon, alamat } = req.body;
 
-    // Cek kalau email/NIK dipakai user lain
     if (email || nik) {
       const kondisi = [];
       if (email) kondisi.push({ email });
@@ -57,8 +56,6 @@ exports.updatePersonal = async (req, res) => {
 
 // ══════════════════════════════════════════════════════════════════════════════
 // PUT /api/user/profile/business  (butuh login)
-// Update: identitasUsaha, namaPemilik, jenisUsaha, alamatUsaha, lamaBerdiri,
-//         omzetBulanan, pengeluaranBulanan, totalHutang, totalAset, frekuensiTransaksi
 // ══════════════════════════════════════════════════════════════════════════════
 exports.updateBusiness = async (req, res) => {
   try {
@@ -113,5 +110,63 @@ exports.changePassword = async (req, res) => {
   } catch (error) {
     console.error("Change password error:", error);
     res.status(500).json({ status: "error", message: "Terjadi kesalahan server." });
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PUT /api/user/profile/photo  (butuh login)
+// ══════════════════════════════════════════════════════════════════════════════
+exports.uploadFoto = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ status: "error", message: "Tidak ada foto yang diupload." });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { fotoProfil: req.file.filename },
+      { new: true }
+    );
+
+    res.json({
+      status: "success",
+      message: "Foto profil berhasil diupdate.",
+      data: {
+        fotoProfil: user.fotoProfil,
+        fotoUrl: `/uploads/${user.fotoProfil}`,
+      },
+    });
+  } catch (error) {
+    console.error("Upload foto error:", error);
+    res.status(500).json({ status: "error", message: "Gagal upload foto." });
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DELETE /api/user/profile/photo  (butuh login)
+// ══════════════════════════════════════════════════════════════════════════════
+exports.hapusFoto = async (req, res) => {
+  try {
+    const fs = require("fs");
+    const user = await User.findById(req.user._id);
+
+    // Hapus file dari disk jika ada
+    if (user.fotoProfil) {
+      const filePath = path.join(__dirname, "../../uploads", user.fotoProfil);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
+    // Hapus dari database
+    await User.findByIdAndUpdate(req.user._id, { fotoProfil: "" });
+
+    res.json({
+      status: "success",
+      message: "Foto profil berhasil dihapus.",
+    });
+  } catch (error) {
+    console.error("Hapus foto error:", error);
+    res.status(500).json({ status: "error", message: "Gagal menghapus foto." });
   }
 };
