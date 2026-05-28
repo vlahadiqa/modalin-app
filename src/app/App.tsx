@@ -1326,8 +1326,13 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
               <span className={`${font} font-extrabold text-[36px] text-[#001038] leading-none`}>
                 {loadingDash ? "..." : <CountUp to={skorReal} />}
               </span>
-              <span className={`${font} font-bold text-[10px] rounded-full px-2 py-1 ${skorReal >= 500 ? "text-[#007059] bg-[#51f9cd]" : "text-white bg-[#ba1a1a]"}`}>
-                {loadingDash ? "..." : statusReal}
+              <span className={`${font} font-bold text-[10px] rounded-full px-2 py-1 ${
+                loadingDash ? "text-[#44464f] bg-[#e0e0e0]" :
+                skorReal >= 600 ? "text-[#007059] bg-[#51f9cd]" :
+                skorReal >= 500 ? "text-[#5a4000] bg-[#ffd966]" :
+                "text-white bg-[#ba1a1a]"
+              }`}>
+                {loadingDash ? "..." : skorReal >= 600 ? "Layak Kredit" : skorReal >= 500 ? "Layak Bersyarat" : "Tidak Layak Kredit"}
               </span>
             </div>
           </motion.div>
@@ -1345,11 +1350,19 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
           <motion.div variants={fadeUp} className="bg-white rounded-[7px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] px-5 pt-4 pb-5">
             <p className={`${font} font-semibold text-[14px] text-[#44464f] tracking-[0.7px] mb-2`}>Limit Tersedia</p>
             <p className={`${font} font-semibold text-[20px] text-[#001038] leading-none mb-2`}>
-            {loadingDash ? "..." : `Rp ${(skorReal >= 700 ? 50_000_000 : skorReal >= 500 ? 25_000_000 : 10_000_000).toLocaleString("id-ID")}`}
-          </p>
-            <button onClick={onCairanDana} className={`${font} font-semibold text-[12px] text-[#006b55] flex items-center gap-1`}>
-              Cairkan Dana {arrowSvg}
-            </button>
+            {loadingDash ? "..." : `Rp ${(
+              skorReal >= 700 ? 50_000_000 :
+              skorReal >= 600 ? 25_000_000 :
+              skorReal >= 500 ? 10_000_000 : 0
+            ).toLocaleString("id-ID")}`}
+                      </p>
+            {skorReal >= 500 ? (
+              <button onClick={onCairanDana} className={`${font} font-semibold text-[12px] text-[#006b55] flex items-center gap-1`}>
+                Cairkan Dana {arrowSvg}
+              </button>
+            ) : (
+              <p className={`${font} font-medium text-[12px] text-[#ba1a1a]`}>Skor tidak memenuhi syarat</p>
+            )}
           </motion.div>
           {/* Bayar Tagihan */}
           <motion.div
@@ -1411,7 +1424,12 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
             <div className="relative z-10 pr-[180px]">
               <p className={`${font} font-normal text-[24px] text-white mb-3`}>Butuh modal tambahan?</p>
               <p className={`${font} font-normal text-[16px] text-[#b0bee8] mb-6`}>
-                Berdasarkan skor terbaru Anda, Anda memenuhi syarat untuk pinjaman mikro KUR hingga Rp 50.000.000.
+                {skorReal >= 500
+                  ? `Berdasarkan skor terbaru Anda, Anda memenuhi syarat untuk pinjaman mikro KUR hingga Rp ${(
+                      skorReal >= 700 ? 50_000_000 :
+                      skorReal >= 600 ? 25_000_000 : 10_000_000
+                    ).toLocaleString("id-ID")}.`
+                  : "Skor kredit Anda belum memenuhi syarat minimum. Tingkatkan skor Anda dengan rutin mengupload data transaksi."}
               </p>
               <motion.button
                 onClick={onCairanDana}

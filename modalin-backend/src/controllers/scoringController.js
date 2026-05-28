@@ -46,7 +46,8 @@ exports.getScoring = async (req, res) => {
 
     // Map response AI ke format yang dipakai frontend
     const skorKredit = aiData.skor_kredit ?? 0;
-    const statusKredit = aiData.status ?? "Tidak Diketahui";
+    const statusKredit = skorKredit >= 600 ? "Layak" :
+                        skorKredit >= 500 ? "Layak Bersyarat" : "Tidak Layak";
     const pesan = aiData.pesan ?? "";
     const fitur = aiData.fitur_hitung ?? {};
 
