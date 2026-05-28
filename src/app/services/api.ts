@@ -1,9 +1,9 @@
 // ============================================================
 // api.ts — Semua pemanggilan ke ModalIn Backend
-// Base URL backend: http://localhost:5000
+// Base URL backend: modalin-app-production.up.railway.app
 // ============================================================
 
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = "https://modalin-app-production.up.railway.app/api";
 
 // ── Helper: ambil token dari localStorage ───────────────────
 const getToken = () => localStorage.getItem("modalin_token");
@@ -195,7 +195,7 @@ export async function apiHapusFoto() {
 
 export async function apiGetUploadCount(): Promise<number> {
   const token = localStorage.getItem("modalin_token");
-  const res = await fetch("http://localhost:5000/api/upload/count", {
+  const res = await fetch("https://modalin-app-production.up.railway.app/api/upload/count", {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Gagal fetch upload count");
