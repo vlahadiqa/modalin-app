@@ -1272,13 +1272,14 @@ function ChangePasswordModal({ onClose }: { onClose: () => void }) {
 }
 
 // ── Dashboard page ────────────────────────────────────────────────────────────
-function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loanData, onLogout }: {
+function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loanData, onLogout, photoUrl }: { 
   profile: UserProfile;
   onCairanDana: () => void;
   onBayarTagihan: () => void;
   onNavigate: (page: Page) => void;
   loanData: { amount: number; duration: number } | null;
   onLogout: () => void;
+  photoUrl?: string | null;
 }) {
   const font = "font-['Plus_Jakarta_Sans',sans-serif]";
 
@@ -1315,7 +1316,7 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
     <div className="flex min-h-screen bg-[#f8f9ff]">
       <DashboardSidebar activePage="dashboard" onNavigate={onNavigate} onLogout={onLogout} />
       <main className="flex-1 px-10 py-8 overflow-y-auto">
-        <DashboardHeader profile={profile} onNavigate={onNavigate} />
+        <DashboardHeader profile={profile} onNavigate={onNavigate} photoUrl={photoUrl} />
 
         {/* Stat cards row */}
         <motion.div className="grid grid-cols-4 gap-4 mb-6" initial="hidden" animate="visible" variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}>
@@ -2406,7 +2407,7 @@ function HasilScoringPage({ profile, onNavigate, onLogout }: { profile: UserProf
     <div className="flex min-h-screen bg-[#f8f9ff]">
       <DashboardSidebar activePage="hasil-scoring" onNavigate={onNavigate} onLogout={onLogout} />
       <main className="flex-1 px-10 py-8 overflow-y-auto">
-        <DashboardHeader profile={profile} onNavigate={onNavigate} />
+        <DashboardHeader profile={profile} onNavigate={onNavigate} photoUrl={photoUrl} />
         <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className={`${font} font-bold text-[40px] text-[#001038] tracking-[-0.4px] mb-6`}>
           Hasil Analisis Kredit
         </motion.h2>
@@ -2513,12 +2514,17 @@ function AnomaliArusKasPage({ profile, onNavigate, onLogout }: { profile: UserPr
   const bersih      = useCountUp(Math.abs(bersihReal), 1400);
   const anomaliCount = useCountUp(totalAnomali, 800);
 
-  const allAnomalies = anomaliList.map((a: any) => ({
-    tanggal: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+  const allAnomalies = anomaliList.map((a: any, i: number) => ({
+    id: i,
+    tanggal: a.tanggal
+      ? new Date(a.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
+      : new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
     tipe: a.tipe ?? "Anomali Arus Kas",
-    nilai: `Rp ${Math.abs(omzetReal - pengeluaranReal).toLocaleString("id-ID")}`,
-    risiko: (a.tipe === "Kritis" ? "Tinggi" : "Sedang") as "Tinggi" | "Sedang",
-    keterangan: a.pesan ?? "",
+    nilai: a.nilai != null
+      ? `Rp ${Math.abs(Number(a.nilai)).toLocaleString("id-ID")}`
+      : `Rp ${Math.abs(omzetReal - pengeluaranReal).toLocaleString("id-ID")}`,
+    risiko: (a.tingkatRisiko === "Tinggi" || a.tipe === "Kritis" ? "Tinggi" : "Sedang") as "Tinggi" | "Sedang",
+    keterangan: a.pesan ?? a.keterangan ?? "",
   }));
   const filtered = activeFilter === "Semua" ? allAnomalies : allAnomalies.filter(a => a.risiko === (activeFilter === "Risiko Tinggi" ? "Tinggi" : "Sedang"));
 
@@ -2528,11 +2534,19 @@ function AnomaliArusKasPage({ profile, onNavigate, onLogout }: { profile: UserPr
   const barData = [3, 4, 3, 5, 4, 6, 8];
   const barDataOut = [2, 3, 4, 3, 5, 4, 7];
 
+  const anomaliTertinggi = allAnomalies.length > 0
+    ? allAnomalies.reduce((max, a) => {
+        const nilaiNum = parseInt(a.nilai.replace(/\D/g, "")) || 0;
+        const maxNum  = parseInt(max.nilai.replace(/\D/g, "")) || 0;
+        return nilaiNum > maxNum ? a : max;
+      }, allAnomalies[0])
+    : null;
+
   return (
     <div className="flex min-h-screen bg-[#f8f9ff]">
       <DashboardSidebar activePage="anomali-arus-kas" onNavigate={onNavigate} onLogout={onLogout} />
       <main className="flex-1 px-10 py-8 overflow-y-auto">
-        <DashboardHeader profile={profile} onNavigate={onNavigate} />
+        <DashboardHeader profile={profile} onNavigate={onNavigate} photoUrl={photoUrl} />
         <h2 className={`${font} font-bold text-[40px] text-[#001038] tracking-[-0.4px] mb-1`}>Deteksi Anomali Arus Kas</h2>
         <p className={`${font} font-semibold text-[14px] text-[#44464f] mb-0.5`}>Analisis Anomali Finansial</p>
         <p className={`${font} font-normal text-[14px] text-[#44464f] mb-5`}>Pantau aktivitas yang mencurigakan secara real-time untuk kesehatan finansial UMKM.</p>
@@ -2587,15 +2601,21 @@ function AnomaliArusKasPage({ profile, onNavigate, onLogout }: { profile: UserPr
 
         {/* Middle row */}
         <motion.div initial="hidden" animate="visible" variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }} className="grid grid-cols-1 gap-4 mb-6">
-          <motion.div variants={fadeUp} className="bg-white rounded-[12px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] p-6">
-            <p className={`${font} font-normal text-[14px] text-[#44464f] mb-2`}>Anomali Tertinggi</p>
-            <p className={`${font} font-bold text-[28px] text-[#001038] mb-1`}>
-              Rp <CountUp to={Math.abs(omzetReal - pengeluaranReal)} />
-            </p>
-            <p className={`${font} font-normal text-[14px] text-[#44464f]`}>
-              {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
-            </p>
-          </motion.div>
+        <motion.div variants={fadeUp} className="bg-white rounded-[12px] shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] p-6">
+          <p className={`${font} font-normal text-[14px] text-[#44464f] mb-2`}>Anomali Tertinggi</p>
+          {anomaliTertinggi ? (
+            <>
+              <p className={`${font} font-bold text-[28px] text-[#001038] mb-1`}>
+                <CountUp to={parseInt(anomaliTertinggi.nilai.replace(/\D/g, "")) || 0} />
+              </p>
+              <p className={`${font} font-normal text-[14px] text-[#44464f]`}>
+                {anomaliTertinggi.tanggal}
+              </p>
+            </>
+          ) : (
+            <p className={`${font} font-normal text-[14px] text-[#44464f]`}>Tidak ada anomali</p>
+          )}
+        </motion.div>
 
         </motion.div>
 
@@ -2623,7 +2643,7 @@ function AnomaliArusKasPage({ profile, onNavigate, onLogout }: { profile: UserPr
           {filtered.map((row) => {
             const rc = risikoColor(row.risiko);
             return (
-              <div key={row.tanggal + row.tipe} className="grid grid-cols-[100px_1fr_140px_110px_1fr_60px] gap-x-4 items-center py-4 border-b border-[#e9eaf1] last:border-0">
+              <div key={row.id} className="grid grid-cols-[100px_1fr_140px_110px_1fr_60px] gap-x-4 items-center py-4 border-b border-[#e9eaf1] last:border-0">
                 <span className={`${font} font-normal text-[14px] text-[#001038]`}>{row.tanggal}</span>
                 <span className={`${font} font-normal text-[14px] text-[#001038]`}>{row.tipe}</span>
                 <span className={`${font} font-normal text-[14px] ${nilaiColor(row.risiko)}`}>{row.nilai}</span>
@@ -2649,9 +2669,17 @@ function AnomaliArusKasPage({ profile, onNavigate, onLogout }: { profile: UserPr
 // ── Rekomendasi page ──────────────────────────────────────────────────────────
 function RekomendasiPage({ profile, onNavigate, onLogout }: { profile: UserProfile; onNavigate: (p: Page) => void; onLogout: () => void }) {
   const font = "font-['Plus_Jakarta_Sans',sans-serif]";
-  const [connected, setConnected] = useState<Record<string, boolean>>({
-    shopee: true, rating: true, visual: true,
+  const [connected, setConnected] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem("modalin_rekomendasi_connected");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return { shopee: true, rating: true, visual: true };
   });
+
+  useEffect(() => {
+    localStorage.setItem("modalin_rekomendasi_connected", JSON.stringify(connected));
+  }, [connected]);
 
   const [rekomendasiData, setRekomendasiData] = useState<any>(null);
 
@@ -2769,7 +2797,7 @@ useEffect(() => {
     <div className="flex min-h-screen bg-[#f8f9ff]">
       <DashboardSidebar activePage="rekomendasi" onNavigate={onNavigate} onLogout={onLogout} />
       <main className="flex-1 px-10 py-8 overflow-y-auto">
-        <DashboardHeader profile={profile} onNavigate={onNavigate} />
+        <DashboardHeader profile={profile} onNavigate={onNavigate} photoUrl={photoUrl} />
         <h2 className={`${font} font-bold text-[40px] text-[#001038] tracking-[-0.4px] mb-1`}>Rencana Aksi Finansial Anda</h2>
         <p className={`${font} font-normal text-[16px] text-[#44464f] mb-6`}>Dipersonalisasi oleh AI Advisor</p>
 
@@ -2824,7 +2852,13 @@ useEffect(() => {
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <button
-                    onClick={() => setConnected(prev => ({ ...prev, [id]: !prev[id] }))}
+                    onClick={() => {
+                    setConnected(prev => {
+                      const next = { ...prev, [id]: !prev[id] };
+                      localStorage.setItem("modalin_rekomendasi_connected", JSON.stringify(next));
+                      return next;
+                    });
+                  }}
                     className={`${font} font-semibold text-[15px] text-white rounded-[6px] px-5 py-2 shadow transition-colors ${isDone ? "bg-[#006b55]" : "bg-[#2f6ab7] hover:bg-[#1e5aa0]"}`}
                   >
                     Hubungkan
@@ -2903,7 +2937,7 @@ export default function App() {
           if (savedPhoto && savedPhoto.startsWith("data:image")) {
             setPhotoUrl(savedPhoto);
           } else if (user.fotoProfil) {
-            setPhotoUrl(`http://localhost:5000/uploads/${user.fotoProfil}`);
+            setPhotoUrl(`https://modalin-app-production.up.railway.app/uploads/${user.fotoProfil}`);
           }
           const savedPage = localStorage.getItem("modalin_page") as Page;
           const targetPage = savedPage || "dashboard";
@@ -2959,6 +2993,7 @@ export default function App() {
     return (
       <DashboardPage
         profile={userProfile}
+        photoUrl={photoUrl}
         onCairanDana={() => navigateTo("cairkan-dana")}
         onBayarTagihan={() => navigateTo("bayar-tagihan")}
         onNavigate={(p) => navigateTo(p)}
@@ -3043,7 +3078,7 @@ export default function App() {
           setUserProfile((p) => ({ ...p, ...user }));
           if (user.fotoProfil) {
             console.log("fotoProfil dari backend:", user.fotoProfil);
-            const fotoUrl = `http://localhost:5000/uploads/${user.fotoProfil}`;
+            const fotoUrl = `https://modalin-app-production.up.railway.app/uploads/${user.fotoProfil}`;
             console.log("fotoUrl:", fotoUrl);
             // Load foto dari backend lalu simpan ke localStorage sebagai base64
             fetch(fotoUrl)
