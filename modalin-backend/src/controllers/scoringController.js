@@ -185,6 +185,36 @@ const today = new Date().toISOString();
       });
     }
 
+     // ── Deteksi transaksi di luar jam operasional ──────────────
+    const Upload = require("../models/Upload");
+    const uploads = await Upload.find({ userId: user._id }).sort({ createdAt: -1 }).limit(50);
+    const jamAneh = uploads.filter(u => {
+      const jam = new Date(u.createdAt).getHours();
+      return jam < 6 || jam >= 22;
+    });
+    if (jamAneh.length > 0) {
+      anomali.push({
+        tipe: "Transaksi Luar Jam Operasional",
+        warna: "#f59e0b",
+        pesan: `Terdeteksi ${jamAneh.length} transaksi di luar jam operasional normal (sebelum 06.00 atau setelah 22.00).`,
+        nilai: Math.round(pengeluaran * 0.1),
+        tingkatRisiko: "Sedang",
+        tanggal: today,
+      });
+    }
+
+    // ── Deteksi pendapatan nihil ───────────────────────────────
+    if (omzet === 0 || (omzet > 0 && omzet < pengeluaran * 0.1)) {
+      anomali.push({
+        tipe: "Pendapatan Nihil",
+        warna: "#ef4444",
+        pesan: "Terdeteksi periode pendapatan sangat rendah atau nihil. Indikasi gangguan operasional bisnis.",
+        nilai: Math.round(pengeluaran * 0.05),
+        tingkatRisiko: "Tinggi",
+        tanggal: today,
+      });
+    }
+
     res.json({
       status: "success",
       data: { omzet, pengeluaran, arus_kas_bersih: omzet - pengeluaran, rasio_pengeluaran: `${(rasio * 100).toFixed(1)}%`, anomali, total_anomali: anomali.length },

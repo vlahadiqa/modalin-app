@@ -1293,7 +1293,11 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
       apiGetScoring()
         .then((data) => {
           setSkorReal(data.skor_kredit ?? 0);
-          setStatusReal(data.status === "Layak" ? "Layak Kredit" : "Tidak Layak Kredit");
+          setStatusReal(
+            data.skor_kredit === 0 ? "Belum Ada Scoring" :
+            data.status === "Layak" ? "Layak Kredit" :
+            data.status === "Layak Bersyarat" ? "Layak Bersyarat" : "Tidak Layak Kredit"
+          );
         })
         .catch(() => {})
         .finally(() => setLoadingDash(false));
@@ -1308,9 +1312,25 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
   const [showAllScoring, setShowAllScoring] = useState(false);
   const today = new Date();
   const formatTanggal = (d: Date) => d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-  const allScoringRows = loadingDash ? [] : [
-    { tanggal: formatTanggal(today), skor: skorReal, status: skorReal >= 500 ? "Layak" : "Tidak Layak", color: skorReal >= 500 ? "text-[#007059]" : "text-[#93000a]" },
-  ];
+  // Simpan history ke localStorage setiap kali ada skor baru
+  useEffect(() => {
+    if (!loadingDash && skorReal > 0) {
+      const key = "modalin_scoring_history";
+      const existing = JSON.parse(localStorage.getItem(key) || "[]");
+      const todayStr = formatTanggal(today);
+      // Hindari duplikat tanggal yang sama
+      const filtered = existing.filter((r: any) => r.tanggal !== todayStr);
+      const newEntry = { tanggal: todayStr, skor: skorReal, status: skorReal >= 500 ? "Layak" : "Tidak Layak" };
+      const updated = [newEntry, ...filtered].slice(0, 10); // simpan max 10 history
+      localStorage.setItem(key, JSON.stringify(updated));
+    }
+  }, [loadingDash, skorReal]);
+
+  const allScoringRows = loadingDash ? [] : JSON.parse(localStorage.getItem("modalin_scoring_history") || "[]").map((r: any) => ({
+    ...r,
+    color: r.skor >= 500 ? "text-[#007059]" : "text-[#93000a]",
+  }));
+
   const scoringRows = showAllScoring ? allScoringRows : allScoringRows.slice(0, 1);
   return (
     <div className="flex min-h-screen bg-[#f8f9ff]">
@@ -1329,11 +1349,16 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
               </span>
               <span className={`${font} font-bold text-[10px] rounded-full px-2 py-1 ${
                 loadingDash ? "text-[#44464f] bg-[#e0e0e0]" :
+                skorReal === 0 ? "text-[#44464f] bg-[#e0e0e0]" :
                 skorReal >= 600 ? "text-[#007059] bg-[#51f9cd]" :
                 skorReal >= 500 ? "text-[#5a4000] bg-[#ffd966]" :
                 "text-white bg-[#ba1a1a]"
+                "text-white bg-[#ba1a1a]"
               }`}>
-                {loadingDash ? "..." : skorReal >= 600 ? "Layak Kredit" : skorReal >= 500 ? "Layak Bersyarat" : "Tidak Layak Kredit"}
+              {loadingDash ? "..." :
+                skorReal === 0 ? "Belum Ada Data" :
+                skorReal >= 600 ? "Layak Kredit" :
+                skorReal >= 500 ? "Layak Bersyarat" : "Tidak Layak Kredit"}
               </span>
             </div>
           </motion.div>
@@ -2405,11 +2430,13 @@ function HasilScoringPage({ profile, onNavigate, onLogout, photoUrl }: { profile
 );
 
   const scoreVal = useCountUp(totalSkor, 1500);
-  const fiveCItems = scoringData?.detail ?? [
-    { label: "Character", score: 80, color: "#006b55", barColor: "#006b55", desc: "Riwayat pembayaran tepat waktu sangat konsisten." },
-    { label: "Capacity", score: 75, color: "#006b55", barColor: "#006b55", desc: "Kemampuan membayar kembali masih dalam batas aman." },
-    { label: "Capital", score: 65, color: "#fbbf24", barColor: "#fbbf24", desc: "Modal kerja mandiri perlu ditingkatkan kembali." },
-    { label: "Condition", score: 82, color: "#006b55", barColor: "#006b55", desc: "Kondisi pasar sektor UMKM Anda sedang tren positif." },
+  const getColor = (score: number) => score >= 70 ? "#006b55" : score >= 50 ? "#fbbf24" : "#ef4444";
+
+  const fiveCItems = (scoringData?.detail && scoringData.detail.length > 0) ? scoringData.detail : [
+    { label: "Character", score: 0, color: "#e0e0e0", barColor: "#e0e0e0", desc: "Belum ada data scoring." },
+    { label: "Capacity",  score: 0, color: "#e0e0e0", barColor: "#e0e0e0", desc: "Belum ada data scoring." },
+    { label: "Capital",   score: 0, color: "#e0e0e0", barColor: "#e0e0e0", desc: "Belum ada data scoring." },
+    { label: "Condition", score: 0, color: "#e0e0e0", barColor: "#e0e0e0", desc: "Belum ada data scoring." },
   ];
   return (
     <div className="flex min-h-screen bg-[#f8f9ff]">
@@ -2502,6 +2529,7 @@ function HasilScoringPage({ profile, onNavigate, onLogout, photoUrl }: { profile
 function AnomaliArusKasPage({ profile, onNavigate, onLogout, photoUrl }: { profile: UserProfile; onNavigate: (p: Page) => void; onLogout: () => void; photoUrl?: string | null }) {
   const font = "font-['Plus_Jakarta_Sans',sans-serif]";
   const [activeFilter, setActiveFilter] = useState<"Semua" | "Risiko Tinggi" | "Risiko Sedang">("Semua");
+  const [selectedAnomali, setSelectedAnomali] = useState<typeof allAnomalies[0] | null>(null);
 
   // ── Ambil data anomali real dari backend ──────────────────────────────────
   const [anomaliData, setAnomaliData] = useState<any>(null);
@@ -2662,7 +2690,12 @@ function AnomaliArusKasPage({ profile, onNavigate, onLogout, photoUrl }: { profi
                 <span className={`${font} font-normal text-[14px] ${nilaiColor(row.risiko)}`}>{row.nilai}</span>
                 <span className={`${font} font-semibold text-[12px] ${rc.text} ${rc.bg} rounded-full px-3 py-1 w-fit`}>{row.risiko}</span>
                 <span className={`${font} font-normal text-[13px] text-[#44464f]`}>{row.keterangan}</span>
-                <button className={`${font} font-semibold text-[13px] text-[#006b55] hover:underline`}>Detail</button>
+                <button
+                  onClick={() => setSelectedAnomali(row)}
+                  className={`${font} font-semibold text-[13px] text-[#006b55] hover:underline`}
+                >
+                  Detail
+                </button>
               </div>
             );
           })}
@@ -2674,6 +2707,26 @@ function AnomaliArusKasPage({ profile, onNavigate, onLogout, photoUrl }: { profi
             </div>
           </div>
         </motion.div>
+        {/* Modal Detail Anomali */}
+          {selectedAnomali && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setSelectedAnomali(null)}>
+              <div className="bg-white rounded-[16px] shadow-xl p-8 w-[480px]" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between mb-5">
+                  <p className={`${font} font-bold text-[20px] text-[#001038]`}>Detail Anomali</p>
+                  <button onClick={() => setSelectedAnomali(null)} className="text-[#44464f] hover:text-[#001038] text-[20px]">✕</button>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <div className="flex justify-between"><span className={`${font} text-[14px] text-[#44464f]`}>Tanggal</span><span className={`${font} font-semibold text-[14px] text-[#001038]`}>{selectedAnomali.tanggal}</span></div>
+                  <div className="flex justify-between"><span className={`${font} text-[14px] text-[#44464f]`}>Tipe Anomali</span><span className={`${font} font-semibold text-[14px] text-[#001038]`}>{selectedAnomali.tipe}</span></div>
+                  <div className="flex justify-between"><span className={`${font} text-[14px] text-[#44464f]`}>Nilai</span><span className={`${font} font-semibold text-[14px] text-[#ba1a1a]`}>{selectedAnomali.nilai}</span></div>
+                  <div className="flex justify-between items-center"><span className={`${font} text-[14px] text-[#44464f]`}>Tingkat Risiko</span>
+                    <span className={`${font} font-semibold text-[12px] text-white px-3 py-1 rounded-full ${selectedAnomali.risiko === "Tinggi" ? "bg-[#ba1a1a]" : "bg-[#ff9800]"}`}>{selectedAnomali.risiko}</span>
+                  </div>
+                  <div className="border-t border-[#e9eaf1] pt-3 mt-1"><p className={`${font} text-[14px] text-[#44464f] leading-6`}>{selectedAnomali.keterangan}</p></div>
+                </div>
+              </div>
+            </div>
+          )}
       </main>
     </div>
   );
