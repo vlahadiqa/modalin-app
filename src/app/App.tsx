@@ -2395,8 +2395,14 @@ function HasilScoringPage({ profile, onNavigate, onLogout, photoUrl }: { profile
 
   // Ambil nilai dari API, fallback ke default kalau belum ada
   const totalSkor = scoringData?.skor_kredit ?? 78;
-  const statusKredit = scoringData?.status ?? "Baik";
-  const pesanAI = scoringData?.pesan ?? "Skor Anda berada di atas rata-rata industri UMKM. Menunjukkan profil risiko yang rendah dengan manajemen arus kas yang sangat sehat.";
+  const statusKredit = scoringData?.status ?? (totalSkor >= 600 ? "Layak" : totalSkor >= 500 ? "Layak Bersyarat" : "Tidak Layak");
+  const pesanAI = scoringData?.pesan ?? (
+  totalSkor >= 600
+    ? "Skor Anda berada di atas rata-rata industri UMKM. Profil risiko rendah dengan manajemen arus kas yang sehat."
+    : totalSkor >= 500
+    ? "Skor Anda cukup memenuhi syarat. Perlu peningkatan pada beberapa aspek keuangan."
+    : "Skor Anda di bawah standar minimum. Diperlukan perbaikan signifikan pada arus kas dan manajemen hutang."
+);
 
   const scoreVal = useCountUp(totalSkor, 1500);
   const fiveCItems = scoringData?.detail ?? [
@@ -2440,7 +2446,14 @@ function HasilScoringPage({ profile, onNavigate, onLogout, photoUrl }: { profile
             </div>
             {/* Info */}
             <div>
-              <p className={`${font} font-semibold text-[28px] text-[#001038] mb-3`}>Kualitas Kredit: {loadingScoring ? "..." : statusKredit}</p>
+            <p className={`${font} font-semibold text-[28px] text-[#001038] mb-3`}>
+              Kualitas Kredit: {loadingScoring ? "..." : 
+                totalSkor >= 700 ? "Sangat Baik" :
+                totalSkor >= 600 ? "Baik" :
+                totalSkor >= 500 ? "Cukup" :
+                totalSkor >= 400 ? "Kurang" : "Tidak Layak"
+              }
+            </p>
               <p className={`${font} font-normal text-[16px] text-[#44464f] leading-[24px] mb-4`}>
                 {loadingScoring ? "Memuat data scoring..." : pesanAI}
               </p>
