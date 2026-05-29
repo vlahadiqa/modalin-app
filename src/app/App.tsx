@@ -2484,7 +2484,7 @@ function HasilScoringPage({ profile, onNavigate, onLogout, photoUrl }: { profile
 }
 
 // ── Anomali Arus Kas page ─────────────────────────────────────────────────────
-function AnomaliArusKasPage({ profile, onNavigate, onLogout }: { profile: UserProfile; onNavigate: (p: Page) => void; onLogout: () => void }) {
+function AnomaliArusKasPage({ profile, onNavigate, onLogout, photoUrl }: { profile: UserProfile; onNavigate: (p: Page) => void; onLogout: () => void; photoUrl?: string | null }) {
   const font = "font-['Plus_Jakarta_Sans',sans-serif]";
   const [activeFilter, setActiveFilter] = useState<"Semua" | "Risiko Tinggi" | "Risiko Sedang">("Semua");
 
@@ -3032,7 +3032,7 @@ export default function App() {
   }
 
   if (page === "anomali-arus-kas") {
-    return <AnomaliArusKasPage profile={userProfile} onNavigate={(p) => navigateTo(p)} onLogout={handleLogout} />;
+    return <AnomaliArusKasPage profile={userProfile} photoUrl={photoUrl} onNavigate={(p) => navigateTo(p)} onLogout={handleLogout} />;
   }
 
   if (page === "rekomendasi") {
