@@ -2667,7 +2667,7 @@ function AnomaliArusKasPage({ profile, onNavigate, onLogout, photoUrl }: { profi
 }
 
 // ── Rekomendasi page ──────────────────────────────────────────────────────────
-function RekomendasiPage({ profile, onNavigate, onLogout }: { profile: UserProfile; onNavigate: (p: Page) => void; onLogout: () => void }) {
+function RekomendasiPage({ profile, onNavigate, onLogout, photoUrl }: { profile: UserProfile; onNavigate: (p: Page) => void; onLogout: () => void; photoUrl?: string | null }) {
   const font = "font-['Plus_Jakarta_Sans',sans-serif]";
   const [connected, setConnected] = useState<Record<string, boolean>>(() => {
     try {
@@ -3036,7 +3036,7 @@ export default function App() {
   }
 
   if (page === "rekomendasi") {
-    return <RekomendasiPage profile={userProfile} onNavigate={(p) => navigateTo(p)} onLogout={handleLogout} />;
+    return <RekomendasiPage profile={userProfile} photoUrl={photoUrl} onNavigate={(p) => navigateTo(p)} onLogout={handleLogout} />;
   }
 
   if (page === "profile") {
