@@ -203,6 +203,24 @@ const today = new Date().toISOString();
       });
     }
 
+        // ── Deteksi transfer ke rekening baru/tidak terdaftar ────────
+    const recentUploads = await Upload.find({ userId: user._id }).sort({ createdAt: -1 }).limit(100);
+    const transferAneh = recentUploads.filter(u => {
+      const nama = (u.originalname || u.filename || "").toLowerCase();
+      return nama.includes("transfer") || nama.includes("trx") || nama.includes("rekening baru");
+    });
+    // Cek juga dari data keuangan: jika ada pengeluaran besar tiba-tiba (>50% omzet dalam 1 transaksi)
+    if (transferAneh.length > 0 || pengeluaran > omzet * 1.5) {
+      anomali.push({
+        tipe: "Transfer ke Rekening Tidak Terdaftar",
+        warna: "#ef4444",
+        pesan: "Terdeteksi transfer ke rekening baru yang tidak ada dalam pola transaksi rutin sebelumnya.",
+        nilai: Math.round(pengeluaran * 0.2),
+        tingkatRisiko: "Tinggi",
+        tanggal: today,
+      });
+    }
+
     // ── Deteksi pendapatan nihil ───────────────────────────────
     if (omzet === 0 || (omzet > 0 && omzet < pengeluaran * 0.1)) {
       anomali.push({

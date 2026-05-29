@@ -1331,7 +1331,7 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
     color: r.skor >= 500 ? "text-[#007059]" : "text-[#93000a]",
   }));
 
-  const scoringRows = showAllScoring ? allScoringRows : allScoringRows.slice(0, 1);
+  const scoringRows = showAllScoring ? allScoringRows : allScoringRows.slice(0, 3);
   return (
     <div className="flex min-h-screen bg-[#f8f9ff]">
       <DashboardSidebar activePage="dashboard" onNavigate={onNavigate} onLogout={onLogout} />
@@ -2529,7 +2529,7 @@ function HasilScoringPage({ profile, onNavigate, onLogout, photoUrl }: { profile
 function AnomaliArusKasPage({ profile, onNavigate, onLogout, photoUrl }: { profile: UserProfile; onNavigate: (p: Page) => void; onLogout: () => void; photoUrl?: string | null }) {
   const font = "font-['Plus_Jakarta_Sans',sans-serif]";
   const [activeFilter, setActiveFilter] = useState<"Semua" | "Risiko Tinggi" | "Risiko Sedang">("Semua");
-  const [selectedAnomali, setSelectedAnomali] = useState<typeof allAnomalies[0] | null>(null);
+  const [selectedAnomali, setSelectedAnomali] = useState<any>(null);
 
   // ── Ambil data anomali real dari backend ──────────────────────────────────
   const [anomaliData, setAnomaliData] = useState<any>(null);
