@@ -2374,7 +2374,7 @@ function FiveCCard({ label, score, color, barColor, desc }: { label: string; sco
   );
 }
 
-function HasilScoringPage({ profile, onNavigate, onLogout }: { profile: UserProfile; onNavigate: (p: Page) => void; onLogout: () => void }) {
+function HasilScoringPage({ profile, onNavigate, onLogout, photoUrl }: { profile: UserProfile; onNavigate: (p: Page) => void; onLogout: () => void; photoUrl?: string | null }) {
   const font = "font-['Plus_Jakarta_Sans',sans-serif]";
   const circumference = 2 * Math.PI * 83;
 
@@ -3028,7 +3028,7 @@ export default function App() {
   }
 
   if (page === "hasil-scoring") {
-    return <HasilScoringPage profile={userProfile} onNavigate={(p) => navigateTo(p)} onLogout={handleLogout} />;
+    return <HasilScoringPage profile={userProfile} photoUrl={photoUrl} onNavigate={(p) => navigateTo(p)} onLogout={handleLogout} />;
   }
 
   if (page === "anomali-arus-kas") {
