@@ -1491,7 +1491,9 @@ function CairanDanaPage({ onBack, onNavigate, onConfirmLoan, profile, onLogout }
 
   const handleJumlahChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const digits = e.target.value.replace(/\D/g, "");
-    setJumlahRaw(digits ? parseInt(digits).toLocaleString("id-ID") : "");
+    if (!digits) { setJumlahRaw(""); return; }
+    const clamped = Math.min(parseInt(digits), limitTersedia);
+    setJumlahRaw(clamped.toLocaleString("id-ID"));
   };
 
   const durations = [1, 3, 6, 9, 12];
@@ -1602,8 +1604,8 @@ function CairanDanaPage({ onBack, onNavigate, onConfirmLoan, profile, onLogout }
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => { if (jumlah > 0) { onConfirmLoan(jumlah, lamaBulan); onBack(); } }}
-                className={`${font} font-bold text-[16px] text-white h-[48px] px-8 rounded-[8px] transition-colors ${jumlah > 0 ? "bg-[#016b55] cursor-pointer" : "bg-[#a0a0a0] cursor-not-allowed"}`}
+                onClick={() => { if (jumlah > 0 && jumlah <= limitTersedia) { onConfirmLoan(jumlah, lamaBulan); onBack(); } }}
+                className={`${font} font-bold text-[16px] text-white h-[48px] px-8 rounded-[8px] transition-colors ${jumlah > 0 && jumlah <= limitTersedia ? "bg-[#016b55] cursor-pointer" : "bg-[#a0a0a0] cursor-not-allowed"}`}
               >
                 Cairkan Sekarang
               </motion.button>
@@ -2514,18 +2516,20 @@ function AnomaliArusKasPage({ profile, onNavigate, onLogout, photoUrl }: { profi
   const bersih      = useCountUp(Math.abs(bersihReal), 1400);
   const anomaliCount = useCountUp(totalAnomali, 800);
 
-  const allAnomalies = anomaliList.map((a: any, i: number) => ({
-    id: i,
-    tanggal: a.tanggal
-      ? new Date(a.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
-      : new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
-    tipe: a.tipe ?? "Anomali Arus Kas",
-    nilai: a.nilai != null
-      ? `Rp ${Math.abs(Number(a.nilai)).toLocaleString("id-ID")}`
-      : `Rp ${Math.abs(omzetReal - pengeluaranReal).toLocaleString("id-ID")}`,
-    risiko: (a.tingkatRisiko === "Tinggi" || a.tipe === "Kritis" ? "Tinggi" : "Sedang") as "Tinggi" | "Sedang",
-    keterangan: a.pesan ?? a.keterangan ?? "",
-  }));
+  const allAnomalies = anomaliList.map((a: any, i: number) => {
+    const nilaiRaw = a.nilai != null ? Math.abs(Number(a.nilai)) : Math.abs(omzetReal - pengeluaranReal);
+    return {
+      id: i,
+      tanggal: a.tanggal
+        ? new Date(a.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
+        : new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+      tipe: a.tipe ?? "Anomali Arus Kas",
+      nilai: `Rp ${nilaiRaw.toLocaleString("id-ID")}`,
+      nilaiNum: nilaiRaw,
+      risiko: (a.tingkatRisiko === "Tinggi" || a.tipe === "Kritis" ? "Tinggi" : "Sedang") as "Tinggi" | "Sedang",
+      keterangan: a.pesan ?? a.keterangan ?? "",
+    };
+  });
   const filtered = activeFilter === "Semua" ? allAnomalies : allAnomalies.filter(a => a.risiko === (activeFilter === "Risiko Tinggi" ? "Tinggi" : "Sedang"));
 
   const risikoColor = (r: "Tinggi" | "Sedang") => r === "Tinggi" ? { bg: "bg-[#ba1a1a]", text: "text-white" } : { bg: "bg-[#ff9800]", text: "text-white" };
@@ -2535,11 +2539,7 @@ function AnomaliArusKasPage({ profile, onNavigate, onLogout, photoUrl }: { profi
   const barDataOut = [2, 3, 4, 3, 5, 4, 7];
 
   const anomaliTertinggi = allAnomalies.length > 0
-    ? allAnomalies.reduce((max, a) => {
-        const nilaiNum = parseInt(a.nilai.replace(/\D/g, "")) || 0;
-        const maxNum  = parseInt(max.nilai.replace(/\D/g, "")) || 0;
-        return nilaiNum > maxNum ? a : max;
-      }, allAnomalies[0])
+    ? allAnomalies.reduce((max, a) => a.nilaiNum > max.nilaiNum ? a : max, allAnomalies[0])
     : null;
 
   return (
@@ -2606,7 +2606,7 @@ function AnomaliArusKasPage({ profile, onNavigate, onLogout, photoUrl }: { profi
           {anomaliTertinggi ? (
             <>
               <p className={`${font} font-bold text-[28px] text-[#001038] mb-1`}>
-                <CountUp to={parseInt(anomaliTertinggi.nilai.replace(/\D/g, "")) || 0} />
+                <CountUp to={anomaliTertinggi.nilaiNum} />
               </p>
               <p className={`${font} font-normal text-[14px] text-[#44464f]`}>
                 {anomaliTertinggi.tanggal}
