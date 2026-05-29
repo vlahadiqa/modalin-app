@@ -141,13 +141,48 @@ exports.getAnomali = async (req, res) => {
     const rasio       = omzet > 0 ? pengeluaran / omzet : 0;
     const anomali     = [];
 
+const today = new Date().toISOString();
+
     if (rasio > 0.9) {
-      anomali.push({ tipe: "Kritis", warna: "#ef4444", pesan: "Pengeluaran melebihi 90% dari omzet. Risiko arus kas sangat tinggi." });
+      anomali.push({
+        tipe: "Pengeluaran Operasional",
+        warna: "#ef4444",
+        pesan: "Pengeluaran melebihi 90% dari omzet. Risiko arus kas sangat tinggi.",
+        nilai: Math.round(pengeluaran - omzet * 0.9),
+        tingkatRisiko: "Tinggi",
+        tanggal: today,
+      });
     } else if (rasio > 0.75) {
-      anomali.push({ tipe: "Peringatan", warna: "#fbbf24", pesan: "Pengeluaran antara 75–90% dari omzet. Perlu pemantauan lebih ketat." });
+      anomali.push({
+        tipe: "Pengeluaran Operasional",
+        warna: "#fbbf24",
+        pesan: "Pengeluaran antara 75–90% dari omzet. Perlu pemantauan lebih ketat.",
+        nilai: Math.round(pengeluaran - omzet * 0.75),
+        tingkatRisiko: "Sedang",
+        tanggal: today,
+      });
     }
+
+    if (omzet > 0 && (omzet - pengeluaran) < omzet * 0.2) {
+      anomali.push({
+        tipe: "Pola Pendapatan",
+        warna: "#fbbf24",
+        pesan: "Margin pendapatan bersih di bawah 20%. Terdeteksi penurunan pendapatan yang signifikan.",
+        nilai: Math.round(omzet * 0.2 - (omzet - pengeluaran)),
+        tingkatRisiko: "Sedang",
+        tanggal: today,
+      });
+    }
+
     if (hutang > omzet * 12) {
-      anomali.push({ tipe: "Peringatan", warna: "#fbbf24", pesan: "Total hutang melebihi pendapatan tahunan. Pertimbangkan restrukturisasi." });
+      anomali.push({
+        tipe: "Transfer Keluar",
+        warna: "#fbbf24",
+        pesan: "Total hutang melebihi pendapatan tahunan. Pertimbangkan restrukturisasi.",
+        nilai: Math.round(hutang - omzet * 12),
+        tingkatRisiko: "Tinggi",
+        tanggal: today,
+      });
     }
 
     res.json({
