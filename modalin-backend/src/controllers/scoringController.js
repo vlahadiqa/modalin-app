@@ -28,10 +28,10 @@ exports.getScoring = async (req, res) => {
     const aset        = asetRaw < 100000 ? asetRaw * 1000000 : asetRaw;
     const hutang      = toNumber(user.totalHutang);
 
-    const safeOmzet       = Math.min(Math.max(omzet, 500000), 100000000);
+    const safeOmzet = Math.min(Math.max(omzet, 3000000), 100000000);
     const safePengeluaran = Math.min(Math.max(pengeluaran, 100000), safeOmzet * 3);
     const safeAset        = Math.min(Math.max(aset, 1000000), 500000000);
-    const safeHutang      = Math.min(Math.max(hutang, 0), safeAset * 10);
+    const safeHutang = Math.min(Math.max(hutang, 0), 50000000);
     const safeFreq        = Math.min(Math.max(toNumber(user.frekuensiTransaksi), 1), 500);
     const safeLama        = Math.min(Math.max(toNumber(user.lamaBerdiri), 1), 120);
 
