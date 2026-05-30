@@ -2418,7 +2418,7 @@ function HasilScoringPage({ profile, onNavigate, onLogout, photoUrl }: { profile
   }, []);
 
   // Ambil nilai dari API, fallback ke default kalau belum ada
-  const totalSkor = scoringData?.skor_kredit ?? 78;
+  const totalSkor = scoringData?.skor_kredit ?? 0;
   const statusKredit = scoringData?.status ?? (totalSkor >= 600 ? "Layak" : totalSkor >= 500 ? "Layak Bersyarat" : "Tidak Layak");
   const pesanAI = scoringData?.pesan ?? (
   totalSkor >= 600
