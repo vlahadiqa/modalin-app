@@ -24,17 +24,34 @@ exports.getScoring = async (req, res) => {
 
     const omzet       = toNumber(user.omzetBulanan);
     const pengeluaran = toNumber(user.pengeluaranBulanan);
-    const aset        = toNumber(user.totalAset);
+    const asetRaw     = toNumber(user.totalAset);
+    const aset        = asetRaw < 100000 ? asetRaw * 1000000 : asetRaw;
     const hutang      = toNumber(user.totalHutang);
 
+    const safeOmzet       = Math.min(Math.max(omzet, 500000), 100000000);
+    const safePengeluaran = Math.min(Math.max(pengeluaran, 100000), safeOmzet * 3);
+    const safeAset        = Math.min(Math.max(aset, 1000000), 500000000);
+    const safeHutang      = Math.min(Math.max(hutang, 0), safeAset * 10);
+    const safeFreq        = Math.min(Math.max(toNumber(user.frekuensiTransaksi), 1), 500);
+    const safeLama        = Math.min(Math.max(toNumber(user.lamaBerdiri), 1), 120);
+
+    const j = (user.jenisUsaha || "").toLowerCase();
+    const safeJenis =
+      j.includes("kuliner") || j.includes("makanan") || j.includes("minuman") || j.includes("catering") || j.includes("resto") ? "Bisnis Kuliner" :
+      j.includes("jasa") || j.includes("freelance") || j.includes("servis") || j.includes("bengkel") || j.includes("salon") ? "Jasa & Freelancer" :
+      j.includes("digital") || j.includes("software") || j.includes("aplikasi") || j.includes("tech") ? "Produk Digital" :
+      j.includes("kreatif") || j.includes("kerajinan") || j.includes("fashion") || j.includes("batik") || j.includes("seni") ? "Produk Kreatif" :
+      j.includes("toko") || j.includes("dagang") || j.includes("online") || j.includes("retail") || j.includes("kelontong") || j.includes("elektronik") ? "Toko & E-commerce" :
+      "Bisnis Kuliner";
+
     const payload = {
-      omzet:       Math.max(omzet, 100000),           // min 100rb
-      pengeluaran: Math.min(pengeluaran, omzet * 5),  // max 5x omzet
-      aset:        Math.max(aset, 1000000),            // min 1jt
-      hutang:      Math.min(hutang, aset * 30),        // max 30x aset
-      freq_trx:    Math.max(toNumber(user.frekuensiTransaksi), 1),
-      lama_bln:    Math.max(toNumber(user.lamaBerdiri), 1),
-      jenis_usaha: user.jenisUsaha || "Bisnis Kuliner",
+      omzet:       safeOmzet,
+      pengeluaran: safePengeluaran,
+      aset:        safeAset,
+      hutang:      safeHutang,
+      freq_trx:    safeFreq,
+      lama_bln:    safeLama,
+      jenis_usaha: safeJenis,
     };
 
     const aiResponse = await fetch(`${AI_API_URL}/predict`, {
