@@ -1376,9 +1376,9 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
             <p className={`${font} font-semibold text-[14px] text-[#44464f] tracking-[0.7px] mb-2`}>Limit Tersedia</p>
             <p className={`${font} font-semibold text-[20px] text-[#001038] leading-none mb-2`}>
             {loadingDash ? "..." : `Rp ${(
-              skorReal >= 700 ? 50_000_000 :
-              skorReal >= 600 ? 25_000_000 :
-              skorReal >= 500 ? 10_000_000 : 0
+            skorReal >= 700 ? 50_000_000 :
+            skorReal >= 600 ? 25_000_000 :
+            skorReal >= 500 ? 10_000_000 : 0
             ).toLocaleString("id-ID")}`}
                       </p>
             {skorReal >= 500 ? (
@@ -1451,8 +1451,9 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
               <p className={`${font} font-normal text-[16px] text-[#b0bee8] mb-6`}>
                 {skorReal >= 500
                   ? `Berdasarkan skor terbaru Anda, Anda memenuhi syarat untuk pinjaman mikro KUR hingga Rp ${(
-                      skorReal >= 700 ? 50_000_000 :
-                      skorReal >= 600 ? 25_000_000 : 10_000_000
+                  skorReal >= 700 ? 50_000_000 :
+                  skorReal >= 600 ? 25_000_000 :
+                  skorReal >= 500 ? 10_000_000 : 0
                     ).toLocaleString("id-ID")}.`
                   : "Skor kredit Anda belum memenuhi syarat minimum. Tingkatkan skor Anda dengan rutin mengupload data transaksi."}
               </p>
