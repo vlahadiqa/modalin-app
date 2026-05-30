@@ -1353,7 +1353,6 @@ function DashboardPage({ profile, onCairanDana, onBayarTagihan, onNavigate, loan
                 skorReal >= 600 ? "text-[#007059] bg-[#51f9cd]" :
                 skorReal >= 500 ? "text-[#5a4000] bg-[#ffd966]" :
                 "text-white bg-[#ba1a1a]"
-                "text-white bg-[#ba1a1a]"
               }`}>
               {loadingDash ? "..." :
                 skorReal === 0 ? "Belum Ada Data" :
