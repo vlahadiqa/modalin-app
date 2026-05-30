@@ -54,6 +54,8 @@ exports.getScoring = async (req, res) => {
       jenis_usaha: safeJenis,
     };
 
+    console.log("PAYLOAD KE AI:", JSON.stringify(payload));
+
     const aiResponse = await fetch(`${AI_API_URL}/predict`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
