@@ -1499,7 +1499,7 @@ function CairanDanaPage({ onBack, onNavigate, onConfirmLoan, profile, onLogout }
       apiGetScoring()
         .then((data) => {
           const skor = data.skor_kredit ?? 0;
-          setLimitTersedia(skor >= 700 ? 50_000_000 : skor >= 500 ? 25_000_000 : 10_000_000);
+          setLimitTersedia(skor >= 700 ? 50_000_000 : skor >= 600 ? 25_000_000 : skor >= 500 ? 10_000_000 : 0);
         })
         .catch(() => {});
     });
