@@ -22,13 +22,18 @@ exports.getScoring = async (req, res) => {
       });
     }
 
+    const omzet       = toNumber(user.omzetBulanan);
+    const pengeluaran = toNumber(user.pengeluaranBulanan);
+    const aset        = toNumber(user.totalAset);
+    const hutang      = toNumber(user.totalHutang);
+
     const payload = {
-      omzet:       toNumber(user.omzetBulanan),
-      pengeluaran: toNumber(user.pengeluaranBulanan),
-      aset:        toNumber(user.totalAset),
-      hutang:      toNumber(user.totalHutang),
-      freq_trx:    toNumber(user.frekuensiTransaksi),
-      lama_bln:    toNumber(user.lamaBerdiri),
+      omzet:       Math.max(omzet, 100000),           // min 100rb
+      pengeluaran: Math.min(pengeluaran, omzet * 5),  // max 5x omzet
+      aset:        Math.max(aset, 1000000),            // min 1jt
+      hutang:      Math.min(hutang, aset * 30),        // max 30x aset
+      freq_trx:    Math.max(toNumber(user.frekuensiTransaksi), 1),
+      lama_bln:    Math.max(toNumber(user.lamaBerdiri), 1),
       jenis_usaha: user.jenisUsaha || "Bisnis Kuliner",
     };
 
